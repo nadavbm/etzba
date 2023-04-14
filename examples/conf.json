@@ -1,0 +1,15 @@
+{
+  "api": {
+    "url": "",
+    "apiKey": "abcdefgHIJK123",
+    "token": ""
+  },
+  "sql": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "example",
+    "user": "ezt",
+    "password": "etzba123",
+    "sslMode": "required"
+  }
+}

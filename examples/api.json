@@ -1,0 +1,27 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "url": "http://example.com",
+      "endpointFile": "endpoints.json"
+    },
+    "response": {
+      "status": 201,
+      "payload": { "name": "agudal" }
+    }
+  },
+  {
+    "request": {
+      "method": "GET",
+      "url": "http://example.com",
+      "endpointPattern": {
+        "length": 5,
+        "occurenses": 1,
+        "regex": "abcdefgHIJK123"
+      }
+    },
+    "response": {
+      "status": 200
+    }
+  }
+]

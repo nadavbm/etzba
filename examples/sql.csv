@@ -1,0 +1,2 @@
+command,table,constraint
+SELECT,example,WHERE id = 1 AND timestamp = ""
