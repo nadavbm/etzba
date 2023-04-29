@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/nadavbm/tshw/cli/cmd"
+	"github.com/nadavbm/etzba/cli/cmd"
 )
 
 func main() {
