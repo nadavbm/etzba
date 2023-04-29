@@ -1,0 +1,4 @@
+command,table,constraint,columnref,values
+SELECT,results,avg_query_duration BETWEEN 13.0 AND 15.0,,
+SELECT,results,min_query_duration BETWEEN 50.0 AND 60.0,,
+SELECT,results,total_queries BETWEEN 100 AND 200,,
