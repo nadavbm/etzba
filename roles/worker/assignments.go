@@ -8,6 +8,7 @@ import (
 
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
+
 	"go.uber.org/zap"
 )
 

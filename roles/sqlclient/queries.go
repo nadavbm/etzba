@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/nadavbm/etzba/pkg/debug"
 )
 
 func (c *Client) selectQuery(querySpecs string) error {
@@ -47,7 +48,8 @@ type QueryBuilder struct {
 }
 
 // toSQL get a query builder and return an sql query
-func toSQL(querySpec QueryBuilder) string {
+func toSQL(querySpec *QueryBuilder) string {
+	debug.Debug("specs", querySpec)
 	switch {
 	case querySpec.Command == "INSERT":
 		return fmt.Sprintf("%s INTO %s (%s) VALUES (%s)", querySpec.Command, querySpec.Table, querySpec.ColumnsRef, querySpec.Values)

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/worker"
 )
 
@@ -27,13 +28,14 @@ func (s *Scheduler) ExecuteJobUntilCompletion() error {
 		go func(num int) {
 			defer wg.Done()
 			for a := range workCh {
-				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile, s.HelperFile)
+				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
 				if err != nil {
 					s.Logger.Fatal("could not create worker")
 				}
-
+				debug.Debug("assignment and worker", a, num)
 				duration, err := worker.GetSQLQueryDuration(&a)
 				if err != nil {
+					debug.Debug(err)
 					s.Logger.Fatal("could not get sql query duration")
 				}
 				results <- duration

@@ -1,8 +1,6 @@
 package scheduler
 
 import (
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/nadavbm/etzba/roles/worker"
@@ -46,39 +44,6 @@ func NewScheduler(logger *zlog.Logger, duration time.Duration, configFile, helpe
 		HelperFile:      helperFile,
 		numberOfWorkers: workers,
 	}, nil
-}
-
-//
-// ----------------------------------------------------------------------------------------- helpers --------------------------------------------------------------------
-//
-// setDurationFromString get a string in a form of 30s (seconds) 12m (minutes) 1h (hours) and return the duration
-func setDurationFromString(duration string) (time.Duration, error) {
-	switch {
-	case strings.HasSuffix(duration, "s"):
-		strNum := duration[0 : len(duration)-1]
-		num, err := strconv.ParseInt(strNum, 10, 64)
-		if err != nil {
-			return 1, err
-		}
-		return time.Duration(num) * time.Second, nil
-
-	case strings.HasSuffix(duration, "m"):
-		strNum := duration[0 : len(duration)-1]
-		num, err := strconv.ParseInt(strNum, 10, 64)
-		if err != nil {
-			return 1, err
-		}
-		return time.Duration(num) * time.Minute, nil
-	case strings.HasSuffix(duration, "h"):
-		strNum := duration[0 : len(duration)-1]
-		num, err := strconv.ParseInt(strNum, 10, 64)
-		if err != nil {
-			return 1, err
-		}
-		return time.Duration(num) * time.Hour, nil
-	default:
-		return time.Duration(1) * time.Second, nil
-	}
 }
 
 /*

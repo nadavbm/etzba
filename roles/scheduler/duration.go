@@ -20,22 +20,22 @@ func (s *Scheduler) ExecuteTaskByDuration() ([]time.Duration, error) {
 
 	assignments := worker.SetSQLAssignmentsToWorkers(data)
 
-	c := make(chan worker.Assignment, s.numberOfWorkers)
+	workCh := make(chan worker.Assignment, s.numberOfWorkers)
 	var allDurations []time.Duration
 
 	wg.Add(s.numberOfWorkers + 3)
 	for i := 0; i < s.numberOfWorkers; i++ {
 		go func(num int) {
 			defer wg.Done()
-			for w := range c {
-				fmt.Println("assignment ", w, " worker ", num)
-				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile, s.HelperFile)
+			for a := range workCh {
+				fmt.Println("assignment ", a, " worker ", num)
+				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
 				if err != nil {
 					s.Logger.Fatal("could not create worker")
 				}
-				duration, err := worker.GetSQLQueryDuration(&w)
+				duration, err := worker.GetSQLQueryDuration(&a)
 				if err != nil {
-					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &w))
+					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a))
 				}
 
 				debug.Debug("duration", duration)
@@ -45,20 +45,20 @@ func (s *Scheduler) ExecuteTaskByDuration() ([]time.Duration, error) {
 		}(i)
 	}
 
-	go addToWorkChannel(s.jobDuration, c, assignments)
+	go addToWorkChannel(s.jobDuration, workCh, assignments)
 
 	go func() {
 		wg.Wait()
 	}()
 
 	for {
-		val, ok := <-c
+		val, ok := <-workCh
 		if ok == false {
 			wg.Done()
 			fmt.Println(val, ok, "loop break")
 			break
 		} else {
-			c <- val
+			workCh <- val
 		}
 	}
 	return allDurations, nil
@@ -85,3 +85,7 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 		}
 	}
 }
+
+//func executeAssignmentAndReturnResult(executionType string, a *worker.Assignment) (*Result, error) {
+
+//}
