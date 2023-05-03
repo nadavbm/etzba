@@ -2,6 +2,7 @@ package worker
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"os"
@@ -55,21 +56,10 @@ func SetSQLAssignmentsToWorkers(data [][]string) []Assignment {
 }
 
 // SetAPIAssignmentsToWorkers will take the csv output and create assignments for worker
-func SetAPIAssignmentsToWorkers(data [][]string) ([]Assignment, error) {
-	// TODO: remove data and read directly json array
+func SetAPIAssignmentsToWorkers(data []byte) ([]Assignment, error) {
 	var assignments []Assignment
-	for i, line := range data {
-		if i > 0 {
-			var a Assignment
-			for c, field := range line {
-				switch {
-				case c == 0:
-					{
-						a.ApiRequest.Url = field
-					}
-				}
-			}
-		}
+	if err := json.Unmarshal(data, &assignments); err != nil {
+		return nil, err
 	}
 	return assignments, nil
 }

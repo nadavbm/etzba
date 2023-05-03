@@ -15,12 +15,6 @@ type APIWorker struct {
 	ApiClient *apiclient.Client
 }
 
-// SQLWorker will get an assignment from the Scheduler
-type SQLWorker struct {
-	Logger    *zlog.Logger
-	SqlClient *sqlclient.Client
-}
-
 // NewWorker creates an instance of a worker
 func NewAPIWorker(logger *zlog.Logger, secretFile string) (*APIWorker, error) {
 	apiClient, err := apiclient.NewClient(logger, secretFile)
@@ -33,6 +27,24 @@ func NewAPIWorker(logger *zlog.Logger, secretFile string) (*APIWorker, error) {
 	}, nil
 }
 
+func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration, error) {
+	// start to count api request duration
+	start := time.Now()
+
+	_, err := w.ApiClient.CreateAPIRequest()
+	if err != nil {
+		return time.Since(start), err
+	}
+
+	return time.Since(start), nil
+}
+
+// SQLWorker will get an assignment from the Scheduler
+type SQLWorker struct {
+	Logger    *zlog.Logger
+	SqlClient *sqlclient.Client
+}
+
 // NewSQLWorker creates an instance of a worker
 func NewSQLWorker(logger *zlog.Logger, secretFile string) (*SQLWorker, error) {
 	sqlClient, err := sqlclient.NewClient(logger, secretFile)
@@ -43,18 +55,6 @@ func NewSQLWorker(logger *zlog.Logger, secretFile string) (*SQLWorker, error) {
 		Logger:    logger,
 		SqlClient: sqlClient,
 	}, nil
-}
-
-func (w *APIWorker) GetApiRequestDuration(assignment *Assignment) (time.Duration, error) {
-	// start to count api request duration
-	start := time.Now()
-
-	_, err := w.ApiClient.CreateAPIRequest()
-	if err != nil {
-		return time.Since(start), err
-	}
-
-	return time.Since(start), nil
 }
 
 func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, error) {
@@ -78,5 +78,16 @@ func translateAssignmentToQueryBuilder(assignment *Assignment) *sqlclient.QueryB
 		Constraint: assignment.SqlQuery.Constraint,
 		ColumnsRef: assignment.SqlQuery.ColumnsRef,
 		Values:     assignment.SqlQuery.Values,
+	}
+}
+
+func translateAssignmentToAPIRequest(assignment *Assignment) *apiclient.ApiRequest {
+	return &apiclient.ApiRequest{
+		Url:             assignment.ApiRequest.Url,
+		Method:          assignment.ApiRequest.Method,
+		Payload:         assignment.ApiRequest.Payload,
+		EndpointFile:    assignment.ApiRequest.EndpointFile,
+		EndpointPattern: assignment.ApiRequest.EndpointPattern,
+		Weight:          assignment.ApiRequest.Weight,
 	}
 }
