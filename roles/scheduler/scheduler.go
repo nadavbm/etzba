@@ -32,13 +32,10 @@ type Scheduler struct {
 
 // NewScheduler creates an instance of a Scheduler
 func NewScheduler(logger *zlog.Logger, duration time.Duration, configFile, helperFile string, workers int, verbose bool) (*Scheduler, error) {
-	resultsCh := make(chan time.Duration)
-	workCh := make(workerChannel)
-
 	return &Scheduler{
 		Logger:          logger,
-		tasksChan:       workCh,
-		resultsChan:     resultsCh,
+		tasksChan:       make(workerChannel),
+		resultsChan:     make(chan time.Duration),
 		jobDuration:     duration,
 		ConfigFile:      configFile,
 		HelperFile:      helperFile,

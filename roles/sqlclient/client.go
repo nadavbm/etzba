@@ -41,10 +41,7 @@ func (c *Client) ExecuteQuery(b *QueryBuilder) error {
 	case b.Command == "DELETE" || b.Command == "delete":
 		return c.execQuery(query)
 	default:
-		if err := c.selectQuery(query); err != nil {
-			return err
-		}
-		return nil
+		return c.selectQuery(query)
 	}
 
 }

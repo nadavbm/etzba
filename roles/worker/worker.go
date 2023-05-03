@@ -3,10 +3,10 @@ package worker
 import (
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/zlog"
+	"github.com/pkg/errors"
 )
 
 // APIWorker will get an assignment from the Scheduler
@@ -61,8 +61,7 @@ func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, 
 	// start to count sql query duration
 	start := time.Now()
 	if err := w.SqlClient.ExecuteQuery(translateAssignmentToQueryBuilder(assignment)); err != nil {
-		debug.Debug(err)
-		return time.Since(start), err
+		return time.Since(start), errors.Wrap(err, "worker could not execute query")
 	}
 
 	return time.Since(start), nil

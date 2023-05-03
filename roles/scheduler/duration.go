@@ -7,11 +7,12 @@ import (
 
 	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/worker"
+	"go.uber.org/zap"
 )
 
 var wg sync.WaitGroup
 
-func (s *Scheduler) ExecuteTaskByDuration() ([]time.Duration, error) {
+func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	data, err := worker.ReadCSVFile(s.HelperFile)
 	if err != nil {
 		s.Logger.Fatal("could not read csv file")
@@ -29,13 +30,9 @@ func (s *Scheduler) ExecuteTaskByDuration() ([]time.Duration, error) {
 			defer wg.Done()
 			for a := range workCh {
 				fmt.Println("assignment ", a, " worker ", num)
-				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
+				duration, err := s.executeSQLQueriesFromAssignment(&a)
 				if err != nil {
-					s.Logger.Fatal("could not create worker")
-				}
-				duration, err := worker.GetSQLQueryDuration(&a)
-				if err != nil {
-					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a))
+					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
 				}
 
 				debug.Debug("duration", duration)
@@ -61,7 +58,12 @@ func (s *Scheduler) ExecuteTaskByDuration() ([]time.Duration, error) {
 			workCh <- val
 		}
 	}
-	return allDurations, nil
+
+	res := &Result{
+		Durations: allDurations,
+	}
+
+	return res, nil
 
 }
 
@@ -86,6 +88,10 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 	}
 }
 
-//func executeAssignmentAndReturnResult(executionType string, a *worker.Assignment) (*Result, error) {
-
-//}
+func (s *Scheduler) executeSQLQueriesFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
+	worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
+	if err != nil {
+		s.Logger.Fatal("could not create worker")
+	}
+	return worker.GetSQLQueryDuration(assignment)
+}

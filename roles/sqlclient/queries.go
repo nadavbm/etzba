@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/nadavbm/etzba/pkg/debug"
+	"github.com/pkg/errors"
 )
 
 func (c *Client) selectQuery(querySpecs string) error {
@@ -14,6 +14,7 @@ func (c *Client) selectQuery(querySpecs string) error {
 	conn, err := pgx.Connect(ctx, getConnectionString(c.auth))
 	if err != nil {
 		c.Logger.Fatal("could not connet to db")
+		return errors.Wrap(err, "could not connect to database")
 	}
 	defer conn.Close(ctx)
 
@@ -22,7 +23,7 @@ func (c *Client) selectQuery(querySpecs string) error {
 		if err == sql.ErrNoRows {
 			return nil
 		}
-		return err
+		return errors.Wrap(err, "could not run query")
 	}
 	defer rows.Close()
 
@@ -49,7 +50,6 @@ type QueryBuilder struct {
 
 // toSQL get a query builder and return an sql query
 func toSQL(querySpec *QueryBuilder) string {
-	debug.Debug("specs", querySpec)
 	switch {
 	case querySpec.Command == "INSERT":
 		return fmt.Sprintf("%s INTO %s (%s) VALUES (%s)", querySpec.Command, querySpec.Table, querySpec.ColumnsRef, querySpec.Values)
