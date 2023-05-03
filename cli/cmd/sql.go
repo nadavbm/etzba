@@ -35,11 +35,11 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 	debug.Debug("args", duration, configFile, helpersFile, workersCount)
 
 	if duration != "" {
-		durations, err := s.ExecuteTaskByDuration()
+		result, err := s.ExecuteTaskByDuration()
 		if err != nil {
 			s.Logger.Fatal("could not start execution", zap.Error(err))
 		}
-		debug.Debug("all durations", durations)
+		debug.Debug("result", result)
 	} else {
 		if err := s.ExecuteJobUntilCompletion(); err != nil {
 			s.Logger.Fatal("could not start workers")
