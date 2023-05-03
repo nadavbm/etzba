@@ -27,8 +27,8 @@ type Secret struct {
 }
 
 type ApiAuth struct {
-	ApiKey string `json:"apiKey,omitempty"`
-	Token  string `json:"token,omitempty"`
+	AuthMethod string `json:"authMethod,omitempty"`
+	Token      string `json:"token,omitempty"`
 }
 
 type SqlAuth struct {

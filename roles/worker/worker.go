@@ -31,7 +31,7 @@ func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration
 	// start to count api request duration
 	start := time.Now()
 
-	_, err := w.ApiClient.CreateAPIRequest()
+	_, err := w.ApiClient.ExecuteAPIRequest()
 	if err != nil {
 		return time.Since(start), err
 	}

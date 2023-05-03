@@ -1,19 +1,18 @@
 package scheduler
 
-import "time"
+import (
+	"time"
 
-// Results record all task durations as duration slice and use later calculator to provide the following:
+	"github.com/nadavbm/etzba/roles/apiclient"
+)
+
+// Result record all task durations as duration slice and use later calculator to provide the following:
 // X amount of tasks processed ,total processing time across all tasks ,the minimum task time (for a single task),
 // the median task time ,the average task time ,and the maximum task time.
 type Result struct {
-	Response  []Response
-	Durations []time.Duration
-	Errors    []Error
-}
-
-type Response struct {
-	Status  int    `json:"status"`
-	Payload string `json:"payload"`
+	APIResponse []apiclient.Response
+	Durations   []time.Duration
+	Errors      []Error
 }
 
 type Error struct {
