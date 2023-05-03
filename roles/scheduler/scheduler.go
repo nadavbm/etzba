@@ -99,8 +99,8 @@ func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment
 
 /*
      ## #         ###
-        #  		  #
-	    #	 	  #
+        #         #
+        #         #
 ##### #####  #### ######   #####
 #  #    #       # #     # #     #
 ####    #      #  #     # #     #
