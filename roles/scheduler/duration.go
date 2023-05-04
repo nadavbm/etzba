@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
@@ -28,14 +27,10 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 		go func(num int) {
 			defer wg.Done()
 			for a := range s.tasksChan {
-				fmt.Println("assignment ", a, " worker ", num)
 				duration, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
 				}
-
-				debug.Debug("duration", duration)
-
 				allDurations = append(allDurations, duration)
 			}
 		}(i)
@@ -59,7 +54,12 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	}
 
 	res := &Result{
-		Durations: allDurations,
+		Assignments: assignments,
+		Durations:   allDurations,
+		// TODO: collect responses from api server by kind and total responses for each kind
+		Response: nil,
+		// TODO: collect error kind and total errors for each error kind
+		Errors: nil,
 	}
 
 	return res, nil

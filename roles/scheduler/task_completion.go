@@ -5,15 +5,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/worker"
+	"go.uber.org/zap"
 )
 
-func (s *Scheduler) ExecuteJobUntilCompletion() error {
+func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	data, err := worker.ReadCSVFile(s.HelperFile)
 	if err != nil {
 		s.Logger.Fatal("could not read csv file")
-		return err
+		return nil, err
 	}
 
 	assignments := worker.SetSQLAssignmentsToWorkers(data)
@@ -30,13 +30,11 @@ func (s *Scheduler) ExecuteJobUntilCompletion() error {
 			for a := range workCh {
 				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
 				if err != nil {
-					s.Logger.Fatal("could not create worker")
+					s.Logger.Fatal("could not create worker", zap.Error(err))
 				}
-				debug.Debug("assignment and worker", a, num)
 				duration, err := worker.GetSQLQueryDuration(&a)
 				if err != nil {
-					debug.Debug(err)
-					s.Logger.Fatal("could not get sql query duration")
+					s.Logger.Fatal("could not get sql query duration", zap.Error(err))
 				}
 				results <- duration
 			}
@@ -63,6 +61,15 @@ func (s *Scheduler) ExecuteJobUntilCompletion() error {
 		fmt.Println(r)
 		allDurations = append(allDurations, r)
 	}
-	fmt.Println("all durations:", allDurations)
-	return nil
+
+	res := &Result{
+		Assignments: assignments,
+		Durations:   allDurations,
+		// TODO: collect responses from api server by kind and total responses for each kind
+		Response: nil,
+		// TODO: collect error kind and total errors for each error kind
+		Errors: nil,
+	}
+
+	return res, nil
 }
