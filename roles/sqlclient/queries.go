@@ -48,8 +48,8 @@ type QueryBuilder struct {
 	Values     string `csv:"values"`
 }
 
-// toSQL get a query builder and return an sql query
-func toSQL(querySpec *QueryBuilder) string {
+// ToSQL get a query builder and return an sql query
+func ToSQL(querySpec *QueryBuilder) string {
 	switch {
 	case querySpec.Command == "INSERT":
 		return fmt.Sprintf("%s INTO %s (%s) VALUES (%s)", querySpec.Command, querySpec.Table, querySpec.ColumnsRef, querySpec.Values)

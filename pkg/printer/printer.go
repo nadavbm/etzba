@@ -5,6 +5,8 @@ import (
 
 	"github.com/nadavbm/etzba/roles/calculator"
 	"github.com/nadavbm/etzba/roles/scheduler"
+	"github.com/nadavbm/etzba/roles/sqlclient"
+	"github.com/nadavbm/etzba/roles/worker"
 )
 
 func PrintTaskDurations(r *scheduler.Result) {
@@ -27,12 +29,48 @@ func PrintTaskDurations(r *scheduler.Result) {
 
 func PrintAssignmentsKind(r *scheduler.Result, command string) {
 	fmt.Println("\nassignment kinds during execution: \n==================================")
-	for i, a := range r.Assignments {
+	kinds := filterDuplicateAssignments(r.Assignments, command)
+	for i, k := range kinds {
 		switch {
 		case command == "api":
-			fmt.Println(fmt.Sprintf("\t\t%d. %v", i, a.ApiRequest))
+			fmt.Println(fmt.Sprintf("\t\t%d. %s", i, k))
 		case command == "sql":
-			fmt.Println(fmt.Sprintf("\t\t%d. %v", i, a.SqlQuery))
+			fmt.Println(fmt.Sprintf("\t\t%d. %s", i, k))
+			fmt.Println(fmt.Sprintf("\t\t  total executions %v", len(r.Assignments)))
 		}
 	}
 }
+
+func filterDuplicateAssignments(assignments []worker.Assignment, command string) []string {
+	var filteredAssignments []string
+
+	allAssignmentKind := make(map[string]bool)
+	for _, a := range assignments {
+		if _, value := allAssignmentKind[getAssignmentAsString(a, command)]; !value {
+			allAssignmentKind[getAssignmentAsString(a, command)] = true
+			filteredAssignments = append(filteredAssignments, getAssignmentAsString(a, command))
+		}
+	}
+	return filteredAssignments
+}
+
+func getAssignmentAsString(a worker.Assignment, command string) string {
+	switch {
+	case command == "api":
+		return fmt.Sprintf("%v", a.ApiRequest)
+	case command == "sql":
+		return fmt.Sprintf("%s", sqlclient.ToSQL(&a.SqlQuery))
+	}
+	return ""
+}
+
+//func getTotalExecutionsPerAssignmentKind(assignments []worker.Assignment, command, aStr string) map[string]int {
+//	count = 0
+//	switch {
+//	case command == "api":
+//		return fmt.Sprintf("%v", a.ApiRequest)
+//	case command == "sql":
+//		return fmt.Sprintf("%s", sqlclient.ToSQL(&a.SqlQuery))
+//	}
+//	return 0
+//}

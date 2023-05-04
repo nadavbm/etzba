@@ -20,6 +20,7 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 
 	assignments := worker.SetSQLAssignmentsToWorkers(data)
 
+	var allAssignments []worker.Assignment
 	var allDurations []time.Duration
 
 	wg.Add(s.numberOfWorkers + 3)
@@ -31,6 +32,7 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
 				}
+				allAssignments = append(allAssignments, a)
 				allDurations = append(allDurations, duration)
 			}
 		}(i)
@@ -46,7 +48,6 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 		val, ok := <-s.tasksChan
 		if ok == false {
 			wg.Done()
-			fmt.Println(val, ok, "loop break")
 			break
 		} else {
 			s.tasksChan <- val
@@ -54,7 +55,7 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	}
 
 	res := &Result{
-		Assignments: assignments,
+		Assignments: allAssignments,
 		Durations:   allDurations,
 		// TODO: collect responses from api server by kind and total responses for each kind
 		Response: nil,

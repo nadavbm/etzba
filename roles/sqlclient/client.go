@@ -30,7 +30,7 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 }
 
 func (c *Client) ExecuteQuery(b *QueryBuilder) error {
-	query := toSQL(b)
+	query := ToSQL(b)
 	switch {
 	case b.Command == "INSERT" || b.Command == "insert":
 		return c.execQuery(query)
