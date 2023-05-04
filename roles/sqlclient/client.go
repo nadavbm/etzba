@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/zlog"
 )
@@ -32,7 +31,6 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 
 func (c *Client) ExecuteQuery(b *QueryBuilder) error {
 	query := toSQL(b)
-	debug.Debug("query", query)
 	switch {
 	case b.Command == "INSERT" || b.Command == "insert":
 		return c.execQuery(query)
