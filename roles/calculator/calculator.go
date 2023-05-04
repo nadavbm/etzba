@@ -8,7 +8,7 @@ import (
 
 // Calculator will calculate  and return float64 ms or time.Duration
 type Calculator struct {
-	Durations scheduler.Durations
+	Result scheduler.Result
 }
 
 // NewCalculator creates an instance of Calculator

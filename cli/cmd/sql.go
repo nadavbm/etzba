@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/nadavbm/etzba/pkg/debug"
+	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/scheduler"
 	"github.com/nadavbm/zlog"
 	"github.com/spf13/cobra"
@@ -34,8 +35,9 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 	}
 	debug.Debug("args", duration, configFile, helpersFile, workersCount)
 
+	var result *scheduler.Result
 	if duration != "" {
-		result, err := s.ExecuteTaskByDuration()
+		result, err = s.ExecuteTaskByDuration()
 		if err != nil {
 			s.Logger.Fatal("could not start execution", zap.Error(err))
 		}
@@ -45,4 +47,6 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 			s.Logger.Fatal("could not start execution")
 		}
 	}
+
+	printer.PrintTaskDurations(result)
 }
