@@ -63,8 +63,8 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}
 
 	res := &Result{
-		Assignments: assignments,
-		Durations:   allDurations,
+		//Assignments: map[getAssignmentStrin assignments,
+		Durations: allDurations,
 		// TODO: collect responses from api server by kind and total responses for each kind
 		Response: nil,
 		// TODO: collect error kind and total errors for each error kind

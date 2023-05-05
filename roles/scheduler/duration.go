@@ -20,8 +20,11 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 
 	assignments := worker.SetSQLAssignmentsToWorkers(data)
 
-	var allAssignments []worker.Assignment
+	allAssignmentsExecutions := make(map[string][]time.Duration)
 	var allDurations []time.Duration
+	for _, a := range assignments {
+		allAssignmentsExecutions[getAssignmentAsString(a, s.ExecutionType)] = allDurations
+	}
 
 	wg.Add(s.numberOfWorkers + 3)
 	for i := 0; i < s.numberOfWorkers; i++ {
@@ -32,8 +35,8 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
 				}
-				allAssignments = append(allAssignments, a)
-				allDurations = append(allDurations, duration)
+				title := getAssignmentAsString(a, s.ExecutionType)
+				allAssignmentsExecutions = appendDurationToAssignmentResults(title, allAssignmentsExecutions, duration)
 			}
 		}(i)
 	}
@@ -55,8 +58,8 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	}
 
 	res := &Result{
-		Assignments: allAssignments,
-		Durations:   allDurations,
+		Assignments: allAssignmentsExecutions,
+		Durations:   concatAllDurations(allAssignmentsExecutions),
 		// TODO: collect responses from api server by kind and total responses for each kind
 		Response: nil,
 		// TODO: collect error kind and total errors for each error kind
@@ -86,4 +89,25 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 			}
 		}
 	}
+}
+
+func appendDurationToAssignmentResults(title string, assignmentResults map[string][]time.Duration, duration time.Duration) map[string][]time.Duration {
+	for key, val := range assignmentResults {
+		if title == key {
+			val = append(val, duration)
+			assignmentResults[key] = val
+		}
+	}
+
+	return assignmentResults
+}
+
+func concatAllDurations(assignmentResults map[string][]time.Duration) []time.Duration {
+	var allDurations []time.Duration
+	for _, val := range assignmentResults {
+		for _, dur := range val {
+			allDurations = append(allDurations, dur)
+		}
+	}
+	return allDurations
 }
