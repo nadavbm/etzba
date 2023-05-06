@@ -1,7 +1,6 @@
 package scheduler
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -17,6 +16,12 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}
 
 	assignments := worker.SetSQLAssignmentsToWorkers(data)
+
+	allAssignmentsExecutions := make(map[string][]time.Duration)
+	var allDurations []time.Duration
+	for _, a := range assignments {
+		allAssignmentsExecutions[getAssignmentAsString(a, s.ExecutionType)] = allDurations
+	}
 
 	results := make(chan time.Duration)
 	workCh := make(workerChannel)
@@ -37,6 +42,11 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 					s.Logger.Fatal("could not get sql query duration", zap.Error(err))
 				}
 				results <- duration
+
+				title := getAssignmentAsString(a, s.ExecutionType)
+				mutex.Lock()
+				allAssignmentsExecutions = appendDurationToAssignmentResults(title, allAssignmentsExecutions, duration)
+				mutex.Unlock()
 			}
 		}(i)
 	}
@@ -55,16 +65,15 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 		close(workCh)
 	}()
 
-	var allDurations []time.Duration
 	// Process results
 	for r := range results {
-		fmt.Println(r)
 		allDurations = append(allDurations, r)
 	}
 
 	res := &Result{
 		//Assignments: map[getAssignmentStrin assignments,
-		Durations: allDurations,
+		Assignments: allAssignmentsExecutions,
+		Durations:   allDurations,
 		// TODO: collect responses from api server by kind and total responses for each kind
 		Response: nil,
 		// TODO: collect error kind and total errors for each error kind

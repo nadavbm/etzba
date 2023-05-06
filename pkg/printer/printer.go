@@ -30,7 +30,7 @@ func PrintAssignmentsKind(r *scheduler.Result, command string) {
 		result := c.GetResult(t)
 		fmt.Println(fmt.Sprintf("\t\t%s: \n\t\t%s", a, fmt.Sprintf("----------------------------------------------------------------")))
 		fmt.Println(fmt.Sprintf("\t\ttotal executions: \t%d", result.Total))
-		fmt.Println(fmt.Sprintf("\t\tavg_duration: \t%v\n", result.AverageTime))
+		fmt.Println(fmt.Sprintf("\t\tavg_duration: \t%vms\n", result.AverageTime))
 	}
 }
 
