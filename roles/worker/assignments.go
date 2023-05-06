@@ -1,16 +1,10 @@
 package worker
 
 import (
-	"encoding/csv"
 	"encoding/json"
-	"io/ioutil"
-	"log"
-	"os"
 
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
-
-	"go.uber.org/zap"
 )
 
 // Assignment for a Worker in order to create a db query and measure the time it takes
@@ -65,43 +59,26 @@ func SetAPIAssignmentsToWorkers(data []byte) ([]Assignment, error) {
 }
 
 //
-// ---------------------------------------------------------------------------------------- csv reader ------------------------------------------------------------------------------
+// ----------------------------------------------------------------- helpers ------------------------------------------------------------------------
 //
 
-// ReadCSVFile get a csv file, use csv reader and retrun byte
-func ReadCSVFile(file string) ([][]string, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
+func translateAssignmentToQueryBuilder(assignment *Assignment) *sqlclient.QueryBuilder {
+	return &sqlclient.QueryBuilder{
+		Command:    assignment.SqlQuery.Command,
+		Table:      assignment.SqlQuery.Table,
+		Constraint: assignment.SqlQuery.Constraint,
+		ColumnsRef: assignment.SqlQuery.ColumnsRef,
+		Values:     assignment.SqlQuery.Values,
 	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			log.Fatal("failed to close json file", zap.Error(err))
-		}
-	}()
-
-	csvReader := csv.NewReader(f)
-	data, err := csvReader.ReadAll()
-	if err != nil {
-		log.Fatal("failed to read data from csv file", zap.Error(err))
-		return nil, err
-	}
-
-	return data, nil
 }
 
-// ReadJSONFile get a json file and return byte slice
-func ReadJSONFile(file string) ([]byte, error) {
-	jsonFile, err := os.Open(file)
-	if err != nil {
-		return nil, err
+func translateAssignmentToAPIRequest(assignment *Assignment) *apiclient.ApiRequest {
+	return &apiclient.ApiRequest{
+		Url:             assignment.ApiRequest.Url,
+		Method:          assignment.ApiRequest.Method,
+		Payload:         assignment.ApiRequest.Payload,
+		EndpointFile:    assignment.ApiRequest.EndpointFile,
+		EndpointPattern: assignment.ApiRequest.EndpointPattern,
+		Weight:          assignment.ApiRequest.Weight,
 	}
-
-	defer func() {
-		if err := jsonFile.Close(); err != nil {
-			log.Fatal("failed to close json file", zap.Error(err))
-		}
-	}()
-
-	return ioutil.ReadAll(jsonFile)
 }
