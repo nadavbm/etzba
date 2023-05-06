@@ -10,6 +10,7 @@ import (
 )
 
 var wg sync.WaitGroup
+var mutex = &sync.Mutex{}
 
 func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	data, err := worker.ReadCSVFile(s.HelperFile)
@@ -36,7 +37,9 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
 				}
 				title := getAssignmentAsString(a, s.ExecutionType)
+				mutex.Lock()
 				allAssignmentsExecutions = appendDurationToAssignmentResults(title, allAssignmentsExecutions, duration)
+				mutex.Unlock()
 			}
 		}(i)
 	}

@@ -14,7 +14,7 @@ func PrintTaskDurations(r *scheduler.Result) {
 	result := c.GetResult(r.Durations)
 	fmt.Println("\nresults durations: \n==================")
 	fmt.Println("\t\ttotal processed tasks: \t", result.Total)
-	fmt.Println(fmt.Sprintf("\t\ttotal processing time: \t%vms", result.TotalOperationTime))
+	fmt.Println(fmt.Sprintf("\t\ttotal processing time: \t%vms", result.TotalJobTime))
 	fmt.Println(fmt.Sprintf("\t\tmin_duration: \t%vms", result.MinimumTime))
 	fmt.Println(fmt.Sprintf("\t\tmed_duration: \t%vms", result.MedianTime))
 	fmt.Println(fmt.Sprintf("\t\tavg_duration: \t%vms", result.AverageTime))

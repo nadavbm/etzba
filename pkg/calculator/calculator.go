@@ -19,12 +19,12 @@ func NewCalculator() *Calculator {
 // GetResult get all required results in float64 as time.Duration is in type of float64
 func (c *Calculator) GetResult(allDurations []time.Duration) *scheduler.Durations {
 	return &scheduler.Durations{
-		Total:              c.getTotalProcesessed(allDurations),
-		TotalOperationTime: c.getTotalProcesessedTime(allDurations),
-		MinimumTime:        c.getMinimumTime(allDurations),
-		MedianTime:         c.getMedianTime(allDurations),
-		AverageTime:        c.getAverageTime(allDurations),
-		MaximumTime:        c.getMaximumTime(allDurations),
+		Total:        c.getTotalProcesessed(allDurations),
+		TotalJobTime: c.getTotalProcesessedTime(allDurations),
+		MinimumTime:  c.getMinimumTime(allDurations),
+		MedianTime:   c.getMedianTime(allDurations),
+		AverageTime:  c.getAverageTime(allDurations),
+		MaximumTime:  c.getMaximumTime(allDurations),
 	}
 }
 

@@ -35,7 +35,7 @@ func NewError(title string, err error) *Error {
 // the median  time, the average  time, and the maximum  time.
 type Durations struct {
 	Total                     int     `json:"total"`
-	TotalOperationTime        float64 `json:""`
+	TotalJobTime              float64 `json:""`
 	MinimumTime               float64 `json:""`
 	MedianTime                float64 `json:""`
 	AverageTime               float64 `json:""`
