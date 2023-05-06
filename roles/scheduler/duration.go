@@ -5,12 +5,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
 
 var wg sync.WaitGroup
+var mutex = &sync.Mutex{}
 
 func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	data, err := worker.ReadCSVFile(s.HelperFile)
@@ -21,22 +21,25 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 
 	assignments := worker.SetSQLAssignmentsToWorkers(data)
 
+	allAssignmentsExecutions := make(map[string][]time.Duration)
 	var allDurations []time.Duration
+	for _, a := range assignments {
+		allAssignmentsExecutions[getAssignmentAsString(a, s.ExecutionType)] = allDurations
+	}
 
 	wg.Add(s.numberOfWorkers + 3)
 	for i := 0; i < s.numberOfWorkers; i++ {
 		go func(num int) {
 			defer wg.Done()
 			for a := range s.tasksChan {
-				fmt.Println("assignment ", a, " worker ", num)
 				duration, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
 				}
-
-				debug.Debug("duration", duration)
-
-				allDurations = append(allDurations, duration)
+				title := getAssignmentAsString(a, s.ExecutionType)
+				mutex.Lock()
+				allAssignmentsExecutions = appendDurationToAssignmentResults(title, allAssignmentsExecutions, duration)
+				mutex.Unlock()
 			}
 		}(i)
 	}
@@ -51,7 +54,6 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 		val, ok := <-s.tasksChan
 		if ok == false {
 			wg.Done()
-			fmt.Println(val, ok, "loop break")
 			break
 		} else {
 			s.tasksChan <- val
@@ -59,7 +61,12 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	}
 
 	res := &Result{
-		Durations: allDurations,
+		Assignments: allAssignmentsExecutions,
+		Durations:   concatAllDurations(allAssignmentsExecutions),
+		// TODO: collect responses from api server by kind and total responses for each kind
+		Response: nil,
+		// TODO: collect error kind and total errors for each error kind
+		Errors: nil,
 	}
 
 	return res, nil
@@ -85,4 +92,25 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 			}
 		}
 	}
+}
+
+func appendDurationToAssignmentResults(title string, assignmentResults map[string][]time.Duration, duration time.Duration) map[string][]time.Duration {
+	for key, val := range assignmentResults {
+		if title == key {
+			val = append(val, duration)
+			assignmentResults[key] = val
+		}
+	}
+
+	return assignmentResults
+}
+
+func concatAllDurations(assignmentResults map[string][]time.Duration) []time.Duration {
+	var allDurations []time.Duration
+	for _, val := range assignmentResults {
+		for _, dur := range val {
+			allDurations = append(allDurations, dur)
+		}
+	}
+	return allDurations
 }
