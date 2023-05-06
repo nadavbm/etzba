@@ -1,8 +1,10 @@
 package scheduler
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
 )
@@ -95,6 +97,16 @@ func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment
 	}
 	return worker.GetAPIRequestDuration(assigment)
 
+}
+
+func getAssignmentAsString(a worker.Assignment, command string) string {
+	switch {
+	case command == "api":
+		return fmt.Sprintf("%v", a.ApiRequest)
+	case command == "sql":
+		return fmt.Sprintf("%s", sqlclient.ToSQL(&a.SqlQuery))
+	}
+	return ""
 }
 
 /*
