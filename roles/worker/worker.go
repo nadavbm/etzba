@@ -66,28 +66,3 @@ func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, 
 
 	return time.Since(start), nil
 }
-
-//
-// ----------------------------------------------------------------- helpers ------------------------------------------------------------------------
-//
-
-func translateAssignmentToQueryBuilder(assignment *Assignment) *sqlclient.QueryBuilder {
-	return &sqlclient.QueryBuilder{
-		Command:    assignment.SqlQuery.Command,
-		Table:      assignment.SqlQuery.Table,
-		Constraint: assignment.SqlQuery.Constraint,
-		ColumnsRef: assignment.SqlQuery.ColumnsRef,
-		Values:     assignment.SqlQuery.Values,
-	}
-}
-
-func translateAssignmentToAPIRequest(assignment *Assignment) *apiclient.ApiRequest {
-	return &apiclient.ApiRequest{
-		Url:             assignment.ApiRequest.Url,
-		Method:          assignment.ApiRequest.Method,
-		Payload:         assignment.ApiRequest.Payload,
-		EndpointFile:    assignment.ApiRequest.EndpointFile,
-		EndpointPattern: assignment.ApiRequest.EndpointPattern,
-		Weight:          assignment.ApiRequest.Weight,
-	}
-}
