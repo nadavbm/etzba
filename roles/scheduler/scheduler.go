@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
@@ -50,7 +51,7 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	var assignments []worker.Assignment
 	switch {
 	case s.ExecutionType == "sql":
-		data, err := worker.ReadCSVFile(s.HelperFile)
+		data, err := reader.ReadCSVFile(s.HelperFile)
 		if err != nil {
 			s.Logger.Fatal("could not read csv file")
 			return nil, err
@@ -58,7 +59,7 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 
 		assignments = worker.SetSQLAssignmentsToWorkers(data)
 	case s.ExecutionType == "api":
-		data, err := worker.ReadJSONFile(s.HelperFile)
+		data, err := reader.ReadJSONFile(s.HelperFile)
 		if err != nil {
 			s.Logger.Fatal("could not read json file")
 			return nil, err

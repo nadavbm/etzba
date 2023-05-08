@@ -4,12 +4,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
 
 func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
-	data, err := worker.ReadCSVFile(s.HelperFile)
+	data, err := reader.ReadCSVFile(s.HelperFile)
 	if err != nil {
 		s.Logger.Fatal("could not read csv file")
 		return nil, err
