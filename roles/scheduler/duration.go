@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
@@ -14,13 +13,11 @@ var wg sync.WaitGroup
 var mutex = &sync.Mutex{}
 
 func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
-	data, err := reader.ReadCSVFile(s.HelperFile)
+	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
-		s.Logger.Fatal("could not read csv file")
+		s.Logger.Fatal("could not create assignments")
 		return nil, err
 	}
-
-	assignments := worker.SetSQLAssignmentsToWorkers(data)
 
 	allAssignmentsExecutions := make(map[string][]time.Duration)
 	var allDurations []time.Duration
