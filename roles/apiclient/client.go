@@ -1,7 +1,7 @@
 package apiclient
 
 import (
-	"encoding/json"
+	"bytes"
 	"io/ioutil"
 	"net/http"
 
@@ -39,34 +39,27 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) ExecuteAPIRequest() (*Response, error) {
-	encodedConfig, err := c.readApiRequestSpecificationsFromJsonFile()
-	if err != nil {
-		return nil, err
-	}
-
-	var req ApiRequest
-	if err := json.Unmarshal(encodedConfig, &req); err != nil {
-		return nil, err
-	}
-
-	return c.createAPIRequest(req.Url, req.Method)
+func (c *Client) ExecuteAPIRequest(req *ApiRequest) (*Response, error) {
+	return c.createAPIRequest(req.Url, req.Method, []byte(req.Payload))
 }
 
-func (c *Client) createAPIRequest(url, method string) (*Response, error) {
+func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response, error) {
 	var req *http.Request
 	var err error
+
 	switch {
-	case req.Method == http.MethodPost:
-		req, err = http.NewRequest(http.MethodPost, url, nil)
+	case method == http.MethodPost:
+		req, err = http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create post request")
 		}
-	case req.Method == http.MethodPut:
-		req, err = http.NewRequest(http.MethodPut, url, nil)
+		req.Header.Set("Content-Type", "application/json")
+	case method == http.MethodPut:
+		req, err = http.NewRequest(http.MethodPut, url, bytes.NewBuffer(reqBody))
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create put request")
 		}
+		req.Header.Set("Content-Type", "application/json")
 	default:
 		req, err = http.NewRequest(http.MethodGet, url, nil)
 		if err != nil {
@@ -75,13 +68,12 @@ func (c *Client) createAPIRequest(url, method string) (*Response, error) {
 	}
 
 	if c.auth != nil {
-		req.Header.Add("Authorization", c.auth.AuthMethod+" "+c.auth.Token)
+		req.Header.Add("Authorization", c.auth.Method+" "+c.auth.Token)
 	}
 
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return &Response{
-			Status:   resp.StatusCode,
 			APIError: err.Error(),
 		}, err
 	}
@@ -91,7 +83,7 @@ func (c *Client) createAPIRequest(url, method string) (*Response, error) {
 		}
 	}()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	resBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return &Response{
 			Status:   resp.StatusCode,
@@ -101,6 +93,6 @@ func (c *Client) createAPIRequest(url, method string) (*Response, error) {
 
 	return &Response{
 		Status:  resp.StatusCode,
-		Payload: string(body),
+		Payload: string(resBody),
 	}, nil
 }

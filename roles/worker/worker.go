@@ -3,7 +3,6 @@ package worker
 import (
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/zlog"
@@ -32,10 +31,8 @@ func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration
 	// start to count api request duration
 	start := time.Now()
 
-	debug.Debug("get api duration", start)
-	_, err := w.ApiClient.ExecuteAPIRequest()
+	_, err := w.ApiClient.ExecuteAPIRequest(translateAssignmentToAPIRequest(assignment))
 	if err != nil {
-		debug.Debug("error", err)
 		return time.Since(start), err
 	}
 

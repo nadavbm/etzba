@@ -32,7 +32,7 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 			for a := range s.tasksChan {
 				duration, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
-					s.Logger.Error(fmt.Sprintf("worker could not run database query %v", &a), zap.Error(err))
+					s.Logger.Error(fmt.Sprintf("worker could not execute task %v", &a), zap.Error(err))
 				}
 				title := getAssignmentAsString(a, s.ExecutionType)
 				mutex.Lock()
