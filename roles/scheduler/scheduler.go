@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -48,8 +49,19 @@ func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, co
 }
 
 func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
-	var assignments []worker.Assignment
 	switch {
+	case s.ExecutionType == "api":
+		data, err := reader.ReadJSONFile(s.HelperFile)
+		if err != nil {
+			s.Logger.Fatal("could not read json file")
+			return nil, err
+		}
+		assignments, err := worker.SetAPIAssignmentsToWorkers(data)
+		if err != nil {
+			s.Logger.Fatal("could not set api worker assignments")
+			return nil, err
+		}
+		return assignments, nil
 	case s.ExecutionType == "sql":
 		data, err := reader.ReadCSVFile(s.HelperFile)
 		if err != nil {
@@ -57,20 +69,10 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 			return nil, err
 		}
 
-		assignments = worker.SetSQLAssignmentsToWorkers(data)
-	case s.ExecutionType == "api":
-		data, err := reader.ReadJSONFile(s.HelperFile)
-		if err != nil {
-			s.Logger.Fatal("could not read json file")
-			return nil, err
-		}
-		assignments, err = worker.SetAPIAssignmentsToWorkers(data)
-		if err != nil {
-			s.Logger.Fatal("could not set api assignments")
-			return nil, err
-		}
+		return worker.SetSQLAssignmentsToWorkers(data), nil
 	}
-	return assignments, nil
+
+	return nil, errors.New("could not create assignment")
 }
 
 func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, error) {

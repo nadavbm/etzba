@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  etzba:
+    image: nadavbm/etzba-api-test:v0.0.1
+    environment:
+      - DATABASE_USER=etzba
+      - DATABASE_PASSWORD=Pass1234
+      - DATABASE_DB=etzba
+      - DATABASE_PORT=5432
+      - DATABASE_HOST=pg-database
+      - DATABASE_SSL=disable
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pg-database
+
+  pg-database:
+    image: 'postgres:14'
+    environment:
+      - POSTGRES_USER=etzba
+      - POSTGRES_PASSWORD=Pass1234
+      - POSTGRES_DB=etzba
+      - TZ='GMT+2'
+      - PGTZ='GMT+2'
+    ports:
+      - "5432:5432"
+    restart: always

@@ -53,7 +53,6 @@ func (a *Authenticator) GetAPIAuth() (*ApiAuth, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return &secret.ApiAuth, nil
 }
 

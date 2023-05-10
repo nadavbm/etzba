@@ -4,19 +4,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/reader"
-	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
 
 func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
-	data, err := reader.ReadCSVFile(s.HelperFile)
+	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
-		s.Logger.Fatal("could not read csv file")
+		s.Logger.Fatal("could not create assignments")
 		return nil, err
 	}
-
-	assignments := worker.SetSQLAssignmentsToWorkers(data)
 
 	allAssignmentsExecutions := make(map[string][]time.Duration)
 	var allDurations []time.Duration
@@ -34,13 +30,9 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 		go func(num int) {
 			defer wg.Done()
 			for a := range workCh {
-				worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
+				duration, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
-					s.Logger.Fatal("could not create worker", zap.Error(err))
-				}
-				duration, err := worker.GetSQLQueryDuration(&a)
-				if err != nil {
-					s.Logger.Fatal("could not get sql query duration", zap.Error(err))
+					s.Logger.Fatal("could not execute task from assignment", zap.Error(err))
 				}
 				results <- duration
 
