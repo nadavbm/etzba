@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Results record all task durations as duration slice and use later calculator to provide the following:
+// Result record all task durations as duration slice and use later calculator to provide the following:
 // X amount of tasks processed ,total processing time across all tasks ,the minimum task time (for a single task),
 // the median task time ,the average task time ,and the maximum task time.
 type Result struct {

@@ -51,9 +51,16 @@ func SetSQLAssignmentsToWorkers(data [][]string) []Assignment {
 
 // SetAPIAssignmentsToWorkers will take the csv output and create assignments for worker
 func SetAPIAssignmentsToWorkers(data []byte) ([]Assignment, error) {
-	var assignments []Assignment
-	if err := json.Unmarshal(data, &assignments); err != nil {
+	var requests []apiclient.ApiRequest
+	if err := json.Unmarshal(data, &requests); err != nil {
 		return nil, err
+	}
+
+	var assignments []Assignment
+	for _, r := range requests {
+		var assignment Assignment
+		assignment.ApiRequest = r
+		assignments = append(assignments, assignment)
 	}
 	return assignments, nil
 }

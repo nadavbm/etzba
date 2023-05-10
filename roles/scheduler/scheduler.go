@@ -56,6 +56,7 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 			s.Logger.Fatal("could not read json file")
 			return nil, err
 		}
+
 		assignments, err := worker.SetAPIAssignmentsToWorkers(data)
 		if err != nil {
 			s.Logger.Fatal("could not set api worker assignments")
@@ -114,8 +115,8 @@ func getAssignmentAsString(a worker.Assignment, command string) string {
 
 /*
      ## #         ###
-        #  		  #
-	    #	 	  #
+        #         #
+        #         #
 ##### #####  #### ######   #####
 #  #    #       # #     # #     #
 ####    #      #  #     # #     #
