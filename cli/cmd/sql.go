@@ -45,6 +45,5 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	printer.PrintTaskDurations(result)
-	printer.PrintAssignmentsKind(result, "sql")
+	printer.PrintToTerminal(result)
 }

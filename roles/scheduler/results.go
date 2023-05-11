@@ -2,6 +2,8 @@ package scheduler
 
 import (
 	"time"
+
+	"github.com/nadavbm/etzba/roles/worker"
 )
 
 // Result record all task durations as duration slice and use later calculator to provide the following:
@@ -9,14 +11,9 @@ import (
 // the median task time ,the average task time ,and the maximum task time.
 type Result struct {
 	Assignments map[string][]time.Duration
-	Response    []Response
+	Responses   map[string][]*worker.Response
 	Durations   []time.Duration
 	Errors      []Error
-}
-
-type Response struct {
-	Status  int    `json:"status"`
-	Payload string `json:"payload"`
 }
 
 type Error struct {
