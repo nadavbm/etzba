@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nadavbm/etzba/pkg/reader"
+	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
@@ -76,13 +77,14 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	return nil, errors.New("could not create assignment")
 }
 
-func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, *worker.Response, error) {
+func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, *apiclient.Response, error) {
 	switch {
 	case s.ExecutionType == "sql":
 		dur, err := s.executeSQLQueriesFromAssignment(assignment)
 		return dur, nil, err
 	case s.ExecutionType == "api":
-		return s.executeAPIRequestFromAssignment(assignment)
+		dur, res := s.executeAPIRequestFromAssignment(assignment)
+		return dur, res, nil
 	}
 	return 0, nil, nil
 }
@@ -95,7 +97,7 @@ func (s *Scheduler) executeSQLQueriesFromAssignment(assignment *worker.Assignmen
 	return worker.GetSQLQueryDuration(assignment)
 }
 
-func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, *worker.Response, error) {
+func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, *apiclient.Response) {
 	worker, err := worker.NewAPIWorker(s.Logger, s.ConfigFile)
 	if err != nil {
 		s.Logger.Fatal("could not create worker")

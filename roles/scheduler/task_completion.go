@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/roles/worker"
+	"github.com/nadavbm/etzba/roles/apiclient"
 	"go.uber.org/zap"
 )
 
@@ -16,8 +16,8 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}
 
 	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
-	allAssignmentsExecutionsResponses := make(map[string][]*worker.Response)
-	var allAPIResponses []*worker.Response
+	allAssignmentsExecutionsResponses := make(map[string][]*apiclient.Response)
+	var allAPIResponses []*apiclient.Response
 	var allDurations []time.Duration
 	for _, a := range assignments {
 		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
@@ -72,8 +72,6 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 		Assignments: allAssignmentsExecutionsDurations,
 		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
 		Responses:   allAssignmentsExecutionsResponses,
-		// TODO: collect error kind and total errors for each error kind
-		Errors: nil,
 	}
 
 	return res, nil
