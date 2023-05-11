@@ -19,10 +19,13 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 		return nil, err
 	}
 
-	allAssignmentsExecutions := make(map[string][]time.Duration)
+	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
+	allAssignmentsExecutionsResponses := make(map[string][]*worker.Response)
+	var allAPIResponses []*worker.Response
 	var allDurations []time.Duration
 	for _, a := range assignments {
-		allAssignmentsExecutions[getAssignmentAsString(a, s.ExecutionType)] = allDurations
+		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
+		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.ExecutionType)] = allAPIResponses
 	}
 
 	wg.Add(s.numberOfWorkers + 3)
@@ -30,13 +33,14 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 		go func(num int) {
 			defer wg.Done()
 			for a := range s.tasksChan {
-				duration, err := s.executeTaskFromAssignment(&a)
+				duration, resp, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not execute task %v", &a), zap.Error(err))
 				}
 				title := getAssignmentAsString(a, s.ExecutionType)
 				mutex.Lock()
-				allAssignmentsExecutions = appendDurationToAssignmentResults(title, allAssignmentsExecutions, duration)
+				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
+				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
 				mutex.Unlock()
 			}
 		}(i)
@@ -59,10 +63,9 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	}
 
 	res := &Result{
-		Assignments: allAssignmentsExecutions,
-		Durations:   concatAllDurations(allAssignmentsExecutions),
-		// TODO: collect responses from api server by kind and total responses for each kind
-		Response: nil,
+		Assignments: allAssignmentsExecutionsDurations,
+		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
+		Responses:   allAssignmentsExecutionsResponses,
 		// TODO: collect error kind and total errors for each error kind
 		Errors: nil,
 	}
@@ -101,6 +104,17 @@ func appendDurationToAssignmentResults(title string, assignmentResults map[strin
 	}
 
 	return assignmentResults
+}
+
+func appendResponseToAssignmentResults(title string, assignmentResponses map[string][]*worker.Response, response *worker.Response) map[string][]*worker.Response {
+	for key, val := range assignmentResponses {
+		if title == key {
+			val = append(val, response)
+			assignmentResponses[key] = val
+		}
+	}
+
+	return assignmentResponses
 }
 
 func concatAllDurations(assignmentResults map[string][]time.Duration) []time.Duration {

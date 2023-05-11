@@ -27,16 +27,20 @@ func NewAPIWorker(logger *zlog.Logger, secretFile string) (*APIWorker, error) {
 	}, nil
 }
 
-func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration, error) {
+func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration, *Response, error) {
 	// start to count api request duration
 	start := time.Now()
 
-	_, err := w.ApiClient.ExecuteAPIRequest(translateAssignmentToAPIRequest(assignment))
+	response, err := w.ApiClient.ExecuteAPIRequest(translateAssignmentToAPIRequest(assignment))
+	resp := &Response{
+		Status:  response.Status,
+		Payload: response.Payload,
+	}
 	if err != nil {
-		return time.Since(start), err
+		return time.Since(start), resp, err
 	}
 
-	return time.Since(start), nil
+	return time.Since(start), resp, nil
 }
 
 // SQLWorker will get an assignment from the Scheduler

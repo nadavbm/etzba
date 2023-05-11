@@ -76,14 +76,15 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	return nil, errors.New("could not create assignment")
 }
 
-func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
+func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, *worker.Response, error) {
 	switch {
 	case s.ExecutionType == "sql":
-		return s.executeSQLQueriesFromAssignment(assignment)
+		dur, err := s.executeSQLQueriesFromAssignment(assignment)
+		return dur, nil, err
 	case s.ExecutionType == "api":
 		return s.executeAPIRequestFromAssignment(assignment)
 	}
-	return 0, nil
+	return 0, nil, nil
 }
 
 func (s *Scheduler) executeSQLQueriesFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
@@ -94,7 +95,7 @@ func (s *Scheduler) executeSQLQueriesFromAssignment(assignment *worker.Assignmen
 	return worker.GetSQLQueryDuration(assignment)
 }
 
-func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, error) {
+func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, *worker.Response, error) {
 	worker, err := worker.NewAPIWorker(s.Logger, s.ConfigFile)
 	if err != nil {
 		s.Logger.Fatal("could not create worker")
@@ -106,7 +107,7 @@ func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment
 func getAssignmentAsString(a worker.Assignment, command string) string {
 	switch {
 	case command == "api":
-		return fmt.Sprintf("%v", a.ApiRequest)
+		return fmt.Sprintf("URL: %s, Method: %s", a.ApiRequest.Url, a.ApiRequest.Method)
 	case command == "sql":
 		return fmt.Sprintf("%s", sqlclient.ToSQL(&a.SqlQuery))
 	}
