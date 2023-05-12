@@ -8,10 +8,10 @@ import (
 	"github.com/nadavbm/etzba/roles/scheduler"
 )
 
-func PrintToTerminal(r *scheduler.Result, collect bool) {
+func PrintToTerminal(r *scheduler.Result, collectApiResponses bool) {
 	printAllTaskDurations(r)
 	printDetailedAssignmentExecutions(r)
-	if collect {
+	if collectApiResponses {
 		printAllResponsesPerAssignment(r)
 	}
 }
