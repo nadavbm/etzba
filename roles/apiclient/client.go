@@ -20,9 +20,8 @@ type Client struct {
 }
 
 type Response struct {
-	Status   string `json:"status"`
-	Payload  string `json:"payload"`
-	APIError string `json:"apiError"`
+	Status  string `json:"status"`
+	Payload string `json:"payload"`
 }
 
 // NewClient creates an instance of api client
@@ -76,7 +75,7 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 	if err != nil {
 		debug.Debug("error1", err)
 		return &Response{
-			APIError: err.Error(),
+			Status: err.Error(),
 		}, err
 	}
 	defer func() {
@@ -89,8 +88,7 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 	if err != nil {
 		debug.Debug("error2", err)
 		return &Response{
-			Status:   resp.Status,
-			APIError: err.Error(),
+			Status: err.Error(),
 		}, err
 	}
 

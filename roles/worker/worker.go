@@ -37,7 +37,6 @@ func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration
 		Payload: response.Payload,
 	}
 	if err != nil {
-		resp.APIError = err.Error()
 		return time.Since(start), resp
 	}
 

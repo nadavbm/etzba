@@ -49,7 +49,6 @@ func printAllResponsesPerAssignment(r *scheduler.Result) {
 		statusCount := getAllResponsesPerAssignment(r)
 		for s, t := range statusCount {
 			fmt.Println(fmt.Sprintf("\tstatus: %s", s))
-			fmt.Println(fmt.Sprintf("\terror: %s", r[0].APIError))
 			fmt.Println(fmt.Sprintf("\ttotal: %d\n", t))
 		}
 	}
