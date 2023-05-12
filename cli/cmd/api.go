@@ -43,5 +43,5 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	printer.PrintToTerminal(result)
+	printer.PrintToTerminal(result, true)
 }

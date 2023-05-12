@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/zlog"
 	"github.com/pkg/errors"
@@ -19,9 +20,8 @@ type Client struct {
 }
 
 type Response struct {
-	Status   int    `json:"status"`
-	Payload  string `json:"payload"`
-	APIError string
+	Status  string `json:"status"`
+	Payload string `json:"payload"`
 }
 
 // NewClient creates an instance of api client
@@ -73,8 +73,9 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 
 	resp, err := c.client.Do(req)
 	if err != nil {
+		debug.Debug("error1", err)
 		return &Response{
-			APIError: err.Error(),
+			Status: err.Error(),
 		}, err
 	}
 	defer func() {
@@ -85,14 +86,14 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 
 	resBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		debug.Debug("error2", err)
 		return &Response{
-			Status:   resp.StatusCode,
-			APIError: err.Error(),
+			Status: err.Error(),
 		}, err
 	}
 
 	return &Response{
-		Status:  resp.StatusCode,
+		Status:  resp.Status,
 		Payload: string(resBody),
 	}, nil
 }

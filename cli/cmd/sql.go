@@ -45,5 +45,5 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	printer.PrintToTerminal(result)
+	printer.PrintToTerminal(result, false)
 }

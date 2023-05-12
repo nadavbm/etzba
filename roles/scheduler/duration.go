@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
@@ -20,8 +21,8 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 	}
 
 	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
-	allAssignmentsExecutionsResponses := make(map[string][]*worker.Response)
-	var allAPIResponses []*worker.Response
+	allAssignmentsExecutionsResponses := make(map[string][]*apiclient.Response)
+	var allAPIResponses []*apiclient.Response
 	var allDurations []time.Duration
 	for _, a := range assignments {
 		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
@@ -66,8 +67,6 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 		Assignments: allAssignmentsExecutionsDurations,
 		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
 		Responses:   allAssignmentsExecutionsResponses,
-		// TODO: collect error kind and total errors for each error kind
-		Errors: nil,
 	}
 
 	return res, nil
@@ -106,7 +105,7 @@ func appendDurationToAssignmentResults(title string, assignmentResults map[strin
 	return assignmentResults
 }
 
-func appendResponseToAssignmentResults(title string, assignmentResponses map[string][]*worker.Response, response *worker.Response) map[string][]*worker.Response {
+func appendResponseToAssignmentResults(title string, assignmentResponses map[string][]*apiclient.Response, response *apiclient.Response) map[string][]*apiclient.Response {
 	for key, val := range assignmentResponses {
 		if title == key {
 			val = append(val, response)
