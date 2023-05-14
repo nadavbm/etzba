@@ -9,7 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (c *Client) selectQuery(querySpecs string) error {
+// executeSelectQuery run SELECT by query specifications
+func (c *Client) executeSelectQuery(querySpecs string) error {
 	ctx := context.TODO()
 	conn, err := pgx.Connect(ctx, getConnectionString(c.auth))
 	if err != nil {
@@ -30,7 +31,8 @@ func (c *Client) selectQuery(querySpecs string) error {
 	return nil
 }
 
-func (c *Client) execQuery(querySpecs string) error {
+// execQuery execute queries of INSERT, UPDATE and DELETE
+func (c *Client) executeQuery(querySpecs string) error {
 	_, err := conn.Exec(context.Background(), querySpecs)
 	return err
 }

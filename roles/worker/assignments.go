@@ -13,7 +13,7 @@ type Assignment struct {
 	SqlQuery   sqlclient.QueryBuilder `json:"sqlQuery"`
 }
 
-// SetSQLAssignmentsToWorkers will take the csv output and create assignments for worker
+// SetSQLAssignmentsToWorkers will take csv output from helpers file and create assignments for all workers
 func SetSQLAssignmentsToWorkers(data [][]string) []Assignment {
 	var assignments []Assignment
 	for i, line := range data {
@@ -49,7 +49,7 @@ func SetSQLAssignmentsToWorkers(data [][]string) []Assignment {
 	return assignments
 }
 
-// SetAPIAssignmentsToWorkers will take the csv output and create assignments for worker
+// SetAPIAssignmentsToWorkers takes a json helpers file config and prepare worker assignments from config
 func SetAPIAssignmentsToWorkers(data []byte) ([]Assignment, error) {
 	var requests []apiclient.ApiRequest
 	if err := json.Unmarshal(data, &requests); err != nil {
@@ -69,6 +69,7 @@ func SetAPIAssignmentsToWorkers(data []byte) ([]Assignment, error) {
 // ----------------------------------------------------------------- helpers ------------------------------------------------------------------------
 //
 
+// translateAssignmentToQueryBuilder takes a worker assignment and prepare sql query from it
 func translateAssignmentToQueryBuilder(assignment *Assignment) *sqlclient.QueryBuilder {
 	return &sqlclient.QueryBuilder{
 		Command:    assignment.SqlQuery.Command,
@@ -79,6 +80,7 @@ func translateAssignmentToQueryBuilder(assignment *Assignment) *sqlclient.QueryB
 	}
 }
 
+// translateAssignmentToAPIRequest takes a worker assignment and prepare api request from it
 func translateAssignmentToAPIRequest(assignment *Assignment) *apiclient.ApiRequest {
 	return &apiclient.ApiRequest{
 		Url:             assignment.ApiRequest.Url,

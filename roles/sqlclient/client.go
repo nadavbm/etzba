@@ -10,6 +10,7 @@ import (
 
 var conn *pgx.Conn
 
+// Client is an sql client that can execute db queries
 type Client struct {
 	Logger *zlog.Logger
 	auth   *authenticator.SqlAuth
@@ -29,17 +30,18 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 	}, nil
 }
 
+// ExecuteQuery gets an sql query from builder (after translate assignment) and execute the query
 func (c *Client) ExecuteQuery(b *QueryBuilder) error {
 	query := ToSQL(b)
 	switch {
 	case b.Command == "INSERT" || b.Command == "insert":
-		return c.execQuery(query)
+		return c.executeQuery(query)
 	case b.Command == "UPDATE" || b.Command == "update":
-		return c.execQuery(query)
+		return c.executeQuery(query)
 	case b.Command == "DELETE" || b.Command == "delete":
-		return c.execQuery(query)
+		return c.executeQuery(query)
 	default:
-		return c.selectQuery(query)
+		return c.executeSelectQuery(query)
 	}
 
 }

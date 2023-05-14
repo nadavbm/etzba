@@ -13,20 +13,18 @@ import (
 var wg sync.WaitGroup
 var mutex = &sync.Mutex{}
 
-func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
+// ExecuteJobByDuration when "--duration=Xx" is given via command line, shceduler will fill work channel with assignments until the job duration is over
+// after execution is completed, it will return the result of the load test
+func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
 		s.Logger.Fatal("could not create assignments")
-		return nil, err
+		panic(err)
 	}
 
-	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
-	allAssignmentsExecutionsResponses := make(map[string][]*apiclient.Response)
-	var allAPIResponses []*apiclient.Response
-	var allDurations []time.Duration
-	for _, a := range assignments {
-		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
-		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.ExecutionType)] = allAPIResponses
+	allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses, err := s.prepareAssignmentsForResultCollection(assignments)
+	if err != nil {
+		panic(err)
 	}
 
 	wg.Add(s.numberOfWorkers + 3)
@@ -73,6 +71,7 @@ func (s *Scheduler) ExecuteTaskByDuration() (*Result, error) {
 
 }
 
+// addToWorkChannel will add assignments to work channel and close the channel when the duration time is over
 func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigments []worker.Assignment) {
 	defer wg.Done()
 	timer := time.NewTimer(duration)
@@ -81,7 +80,7 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 		select {
 		case <-timer.C:
 			timer.Stop()
-			fmt.Println("time is over")
+			fmt.Println(fmt.Sprintf("job completed after %v", duration))
 			wg.Done()
 			time.Sleep(1 * time.Second)
 			close(c)
@@ -94,6 +93,7 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 	}
 }
 
+// appendDurationToAssignmentResults collect all durations per assignment during job execution for any worker and return a map with all assignments and their durations
 func appendDurationToAssignmentResults(title string, assignmentResults map[string][]time.Duration, duration time.Duration) map[string][]time.Duration {
 	for key, val := range assignmentResults {
 		if title == key {
@@ -105,6 +105,7 @@ func appendDurationToAssignmentResults(title string, assignmentResults map[strin
 	return assignmentResults
 }
 
+// appendResponseToAssignmentResults collect all responses from server per assignment
 func appendResponseToAssignmentResults(title string, assignmentResponses map[string][]*apiclient.Response, response *apiclient.Response) map[string][]*apiclient.Response {
 	for key, val := range assignmentResponses {
 		if title == key {
@@ -116,6 +117,7 @@ func appendResponseToAssignmentResults(title string, assignmentResponses map[str
 	return assignmentResponses
 }
 
+// concatAllDurations from assignment results to return durations from all assignments
 func concatAllDurations(assignmentResults map[string][]time.Duration) []time.Duration {
 	var allDurations []time.Duration
 	for _, val := range assignmentResults {

@@ -8,6 +8,7 @@ import (
 	"github.com/nadavbm/etzba/roles/scheduler"
 )
 
+// PrintToTerminal prints resutls to terminal
 func PrintToTerminal(r *scheduler.Result, collectApiResponses bool) {
 	printAllTaskDurations(r)
 	printDetailedAssignmentExecutions(r)

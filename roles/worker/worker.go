@@ -27,6 +27,7 @@ func NewAPIWorker(logger *zlog.Logger, secretFile string) (*APIWorker, error) {
 	}, nil
 }
 
+// GetAPIRequestDuration will execute api request and measure the duration since the request started until response
 func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration, *apiclient.Response) {
 	// start to count api request duration
 	start := time.Now()
@@ -61,6 +62,7 @@ func NewSQLWorker(logger *zlog.Logger, secretFile string) (*SQLWorker, error) {
 	}, nil
 }
 
+// GetSQLQueryDuration will execute a query in the database and measure the duration it takes
 func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, error) {
 	// start to count sql query duration
 	start := time.Now()

@@ -16,9 +16,21 @@ func NewCalculator() *Calculator {
 	return &Calculator{}
 }
 
+// Durations compose of total # processed tasks, total processing time for the job, the minimum task time,
+// the median  time, the average  time, and the maximum  time.
+type Durations struct {
+	Total                     int     `json:"total"`
+	TotalJobTime              float64 `json:""`
+	MinimumTime               float64 `json:""`
+	MedianTime                float64 `json:""`
+	AverageTime               float64 `json:""`
+	MaximumTime               float64 `json:""`
+	TotalJobsOfAllWorkersTime float64 `json:""`
+}
+
 // GetResult get all required results in float64 as time.Duration is in type of float64
-func (c *Calculator) GetResult(allDurations []time.Duration) *scheduler.Durations {
-	return &scheduler.Durations{
+func (c *Calculator) GetResult(allDurations []time.Duration) *Durations {
+	return &Durations{
 		Total:        c.getTotalProcesessed(allDurations),
 		TotalJobTime: c.getTotalProcesessedTime(allDurations),
 		MinimumTime:  c.getMinimumTime(allDurations),
@@ -55,7 +67,12 @@ func (c *Calculator) getMinimumTime(allDurations []time.Duration) float64 {
 
 func (c *Calculator) getMedianTime(allDurations []time.Duration) float64 {
 	total := c.getTotalProcesessed(allDurations)
-	median := int(total / 2)
+	var median int
+	if len(allDurations) < 2 {
+		median = 0
+	} else {
+		median = int(total / 2)
+	}
 	return float64(allDurations[median].Milliseconds())
 }
 
