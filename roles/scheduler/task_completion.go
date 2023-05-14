@@ -4,24 +4,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nadavbm/etzba/roles/apiclient"
 	"go.uber.org/zap"
 )
 
+// ExecuteJobUntilCompletion when omitting '--duration' from the command, this function will execute
+// all assignments from the helpers file until all assignments completed
 func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
 		s.Logger.Fatal("could not create assignments")
-		return nil, err
+		panic(err)
 	}
 
-	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
-	allAssignmentsExecutionsResponses := make(map[string][]*apiclient.Response)
-	var allAPIResponses []*apiclient.Response
-	var allDurations []time.Duration
-	for _, a := range assignments {
-		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
-		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.ExecutionType)] = allAPIResponses
+	allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses, err := s.prepareAssignmentsForResultCollection(assignments)
+	if err != nil {
+		panic(err)
 	}
 
 	results := make(chan time.Duration)
@@ -38,13 +35,14 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 				if err != nil {
 					s.Logger.Fatal("could not execute task from assignment", zap.Error(err))
 				}
-				results <- duration
 
 				title := getAssignmentAsString(a, s.ExecutionType)
 				mutex.Lock()
 				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
 				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
 				mutex.Unlock()
+
+				results <- duration
 			}
 		}(i)
 	}
@@ -63,6 +61,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 		close(workCh)
 	}()
 
+	var allDurations []time.Duration
 	// Process results
 	for r := range results {
 		allDurations = append(allDurations, r)
@@ -70,7 +69,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 
 	res := &Result{
 		Assignments: allAssignmentsExecutionsDurations,
-		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
+		Durations:   allDurations,
 		Responses:   allAssignmentsExecutionsResponses,
 	}
 

@@ -14,15 +14,3 @@ type Result struct {
 	Responses   map[string][]*apiclient.Response
 	Durations   []time.Duration
 }
-
-// Result compose of total # processed tasks, total processing time for the job, the minimum task time,
-// the median  time, the average  time, and the maximum  time.
-type Durations struct {
-	Total                     int     `json:"total"`
-	TotalJobTime              float64 `json:""`
-	MinimumTime               float64 `json:""`
-	MedianTime                float64 `json:""`
-	AverageTime               float64 `json:""`
-	MaximumTime               float64 `json:""`
-	TotalJobsOfAllWorkersTime float64 `json:""`
-}

@@ -35,7 +35,7 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 
 	var result *scheduler.Result
 	if duration != "" {
-		result, err = s.ExecuteTaskByDuration()
+		result, err = s.ExecuteJobByDuration()
 		if err != nil {
 			s.Logger.Fatal("could not start execution", zap.Error(err))
 		}

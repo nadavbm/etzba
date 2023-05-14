@@ -12,13 +12,15 @@ import (
 	"go.uber.org/zap"
 )
 
+// Client is an api client
 type Client struct {
-	Logger      *zlog.Logger
-	client      *http.Client
-	auth        *authenticator.ApiAuth
-	requestFile string
+	Logger *zlog.Logger
+	client *http.Client
+	// auth contains authentication method and token for api server
+	auth *authenticator.ApiAuth
 }
 
+// Response is the server response, currently only status and payload
 type Response struct {
 	Status  string `json:"status"`
 	Payload string `json:"payload"`
@@ -39,10 +41,12 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 	}, nil
 }
 
+// ExecuteAPIRequest to remote server url by ApiRequest
 func (c *Client) ExecuteAPIRequest(req *ApiRequest) (*Response, error) {
 	return c.createAPIRequest(req.Url, req.Method, []byte(req.Payload))
 }
 
+// createAPIRequest will create GET, POST, PUT or DELETE request for api server url
 func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response, error) {
 	var req *http.Request
 	var err error
