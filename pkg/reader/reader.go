@@ -21,7 +21,7 @@ func NewReader(logger *zlog.Logger) *Reader {
 	}
 }
 
-// ReadCSVFile get a csv file, use csv reader and retrun byte
+// ReadCSVFile get a csv file, use csv reader and retrun string slices
 func (r *Reader) ReadCSVFile(file string) ([][]string, error) {
 	f, err := os.Open(file)
 	if err != nil {

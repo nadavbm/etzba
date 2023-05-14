@@ -33,7 +33,7 @@ type Secret struct {
 type ApiAuth struct {
 	// Method is the authentication method, e.g. Bearer or ApiKey
 	Method string `json:"method,omitempty"`
-	// Toekn is the authentication token (Bearer token or API key value)
+	// Token is the authentication token (Bearer token or API key value)
 	Token string `json:"token,omitempty"`
 }
 
