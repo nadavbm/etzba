@@ -1,6 +1,6 @@
 # etzba
 
-**etzba** is a performance tests tool for sql and api servers. the tool use several configuraiton files to run load tests to benchmark the service performance.
+**etzba** is a performance tests tool for sql and api servers. the tool use several configuraiton files to run load tests to measure the service performance.
 
 the word etzba used in biblical times as a measurement unit and the english translation from hebrew to etzba is finger. 
 
@@ -9,10 +9,10 @@ the word etzba used in biblical times as a measurement unit and the english tran
 this command will build the cli tool:
 
 ```sh
-go-build
+make go-build
 ```
 
-you may move the file to `/usr/local/bin` or run it from `cd cli/` as follow:
+you may move the file to `/usr/local/bin` or run it from `cli` dir as follow:
 
 ``` sh
 cd cli/
@@ -20,6 +20,8 @@ cd cli/
 ./etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=1s
 ./etz api --workers=3 --config=secret.json --helpers=api.json
 ```
+
+you may also use the `examples/` directory to run tests, deploy environment for testing, example of helpers file or build the binary.
 
 ### prepare sql service helpers file
 
@@ -48,14 +50,14 @@ the helpers file will list an array of api requests that can be sent to a servic
   {
     "method": "POST",
     "url": "http://localhost:8080/v1/results",
-    "payload": "[{\"type\":\"api\",\"job_dation\":65.65,\"avg_duration\":12.32,\"min_duration\":56.32,\"med_duration\":31.14,\"max_duration\":99.9,\"total\":10},{\"type\":\"api\",\"job_duration\":45.45,\"avg_duration\":11.12,\"min_duration\":49.19,\"med_duration\":32.34,\"max_duration\":90.91,\"total\":21}]"
+    "payload": "[{\"type\":\"api\",\"job_duration\":65.65,\"avg_duration\":12.32,\"min_duration\":56.32,\"med_duration\":31.14,\"max_duration\":99.9,\"total\":10},{\"type\":\"api\",\"job_duration\":45.45,\"avg_duration\":11.12,\"min_duration\":49.19,\"med_duration\":32.34,\"max_duration\":90.91,\"total\":21}]"
   }
 ]
 ```
 
 ### create authentication file
 
-for api, you can define authentication by token and bearer:
+for api, you can define authentication by token and bearer or api key:
 
 ```json
 {
