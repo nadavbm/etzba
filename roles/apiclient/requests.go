@@ -1,12 +1,12 @@
 package apiclient
 
 type ApiRequest struct {
-	Url             string          `json:"url,omitempty"`
-	Method          string          `json:"method,omitempty"`
-	Payload         string          `json:"payload,omitempty"`
-	EndpointFile    string          `json:"endpointFile,omitempty"`
-	EndpointPattern EndpointPattern `json:"endpointPattern,omitempty"`
-	Weight          int             `json:"weight,omitempty"`
+	Url             string          `json:"url,omitempty" yaml:"url"`
+	Method          string          `json:"method,omitempty" yaml:"method"`
+	Payload         string          `json:"payload,omitempty" yaml:"payload"`
+	EndpointFile    string          `json:"endpointFile,omitempty" yaml:"endpointFile"`
+	EndpointPattern EndpointPattern `json:"endpointPattern,omitempty" yaml:"endpointPattern"`
+	Weight          int             `json:"weight,omitempty" yaml:"weight"`
 }
 
 type EndpointPattern struct {

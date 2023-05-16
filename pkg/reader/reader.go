@@ -38,18 +38,18 @@ func (r *Reader) ReadCSVFile(file string) ([][]string, error) {
 	return csvReader.ReadAll()
 }
 
-// ReadJSONFile get a json file and return byte slice
-func (r *Reader) ReadJSONFile(file string) ([]byte, error) {
-	jsonFile, err := os.Open(file)
+// ReadFile get a json or yaml file and return byte slice
+func (r *Reader) ReadFile(file string) ([]byte, error) {
+	osFile, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func() {
-		if err := jsonFile.Close(); err != nil {
+		if err := osFile.Close(); err != nil {
 			r.logger.Error("failed to close json file", zap.Error(err))
 		}
 	}()
 
-	return ioutil.ReadAll(jsonFile)
+	return ioutil.ReadAll(osFile)
 }

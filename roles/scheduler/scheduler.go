@@ -1,15 +1,17 @@
 package scheduler
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
+	"strings"
 	"time"
 
+	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/apiclient"
-	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
+	"gopkg.in/yaml.v2"
 )
 
 type workerChannel chan worker.Assignment
@@ -56,21 +58,26 @@ func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, co
 	}, nil
 }
 
+//
+// --------------------------------------------------------------------------------------------- worker assignments -----------------------------------------------------------------------------------------------------------------
+//
+
 // setAssignmentsToWorkers will create a slice of assignment from helpers file
 func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	switch {
 	case s.ExecutionType == "api":
-		data, err := s.reader.ReadJSONFile(s.HelpersFile)
+		data, err := s.reader.ReadFile(s.HelpersFile)
 		if err != nil {
 			s.Logger.Fatal("could not read json file")
 			return nil, err
 		}
 
-		assignments, err := worker.SetAPIAssignmentsToWorkers(data)
+		assignments, err := s.setAPIAssignmentsToWorkers(data)
 		if err != nil {
 			s.Logger.Fatal("could not set api worker assignments")
 			return nil, err
 		}
+		debug.Debug("assignments", assignments)
 		return assignments, nil
 	case s.ExecutionType == "sql":
 		data, err := s.reader.ReadCSVFile(s.HelpersFile)
@@ -79,25 +86,75 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 			return nil, err
 		}
 
-		return worker.SetSQLAssignmentsToWorkers(data), nil
+		return s.setSQLAssignmentsToWorkers(data), nil
 	}
 
 	return nil, errors.New("could not create assignment")
 }
 
-// prepareAssignmentsForResultCollection set maps to prepare the result output with assignment durations and responses
-func (s *Scheduler) prepareAssignmentsForResultCollection(assignments []worker.Assignment) (map[string][]time.Duration, map[string][]*apiclient.Response, error) {
-	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
-	allAssignmentsExecutionsResponses := make(map[string][]*apiclient.Response)
-	var allAPIResponses []*apiclient.Response
-	var allDurations []time.Duration
-	for _, a := range assignments {
-		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
-		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.ExecutionType)] = allAPIResponses
+// setAPIAssignmentsToWorkers takes a json helpers file config and prepare worker assignments from config
+func (s *Scheduler) setAPIAssignmentsToWorkers(data []byte) ([]worker.Assignment, error) {
+	var requests []apiclient.ApiRequest
+	switch {
+	case strings.HasSuffix(s.HelpersFile, ".json"):
+		if err := json.Unmarshal(data, &requests); err != nil {
+			return nil, err
+		}
+	case strings.HasSuffix(s.HelpersFile, ".yaml"):
+		if err := yaml.Unmarshal(data, &requests); err != nil {
+			debug.Debug("error", err)
+			return nil, err
+		}
 	}
-
-	return allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses, nil
+	var assignments []worker.Assignment
+	for _, r := range requests {
+		var assignment worker.Assignment
+		assignment.ApiRequest = r
+		assignments = append(assignments, assignment)
+		debug.Debug("assignments", assignments)
+	}
+	return assignments, nil
 }
+
+// setSQLAssignmentsToWorkers will take csv output from helpers file and create assignments for all workers
+func (s *Scheduler) setSQLAssignmentsToWorkers(data [][]string) []worker.Assignment {
+	var assignments []worker.Assignment
+	for i, line := range data {
+		if i > 0 {
+			var a worker.Assignment
+			for c, field := range line {
+				switch {
+				case c == 0:
+					{
+						a.SqlQuery.Command = field
+					}
+				case c == 1:
+					{
+						a.SqlQuery.Table = field
+					}
+				case c == 2:
+					{
+						a.SqlQuery.Constraint = field
+					}
+				case c == 3:
+					{
+						a.SqlQuery.ColumnsRef = field
+					}
+				case c == 4:
+					{
+						a.SqlQuery.Values = field
+					}
+				}
+			}
+			assignments = append(assignments, a)
+		}
+	}
+	return assignments
+}
+
+//
+// --------------------------------------------------------------------------------------------- worker executions -----------------------------------------------------------------------------------------------------------------
+//
 
 // executeTaskFromAssignment will execute sql query or api request from the given worker assignment
 func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, *apiclient.Response, error) {
@@ -131,22 +188,10 @@ func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment
 
 }
 
-//
-// ------------------------------------------------------------------------------- helpers ------------------------------------------------------------------
-//
-
-// getAssignmentAsString prepare the assignment title for stdout
-func getAssignmentAsString(a worker.Assignment, command string) string {
-	switch {
-	case command == "api":
-		return fmt.Sprintf("URL: %s, Method: %s", a.ApiRequest.Url, a.ApiRequest.Method)
-	case command == "sql":
-		return fmt.Sprintf("%s", sqlclient.ToSQL(&a.SqlQuery))
-	}
-	return ""
-}
-
 /*
+
+
+
      ## #         ###
         #         #
         #         #
@@ -156,4 +201,7 @@ func getAssignmentAsString(a worker.Assignment, command string) string {
 #       #     #   #     # #     #
 #       #    #    #     # #     #
 ####    #   ####  ######   ##### #
+
+
+
 */

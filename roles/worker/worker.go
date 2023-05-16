@@ -3,6 +3,7 @@ package worker
 import (
 	"time"
 
+	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/zlog"
@@ -56,6 +57,7 @@ func NewSQLWorker(logger *zlog.Logger, secretFile string) (*SQLWorker, error) {
 	if err != nil {
 		return nil, err
 	}
+	debug.Debug("sql worker", sqlClient, secretFile)
 	return &SQLWorker{
 		Logger:    logger,
 		SqlClient: sqlClient,
@@ -69,6 +71,6 @@ func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, 
 	if err := w.SqlClient.ExecuteQuery(translateAssignmentToQueryBuilder(assignment)); err != nil {
 		return time.Since(start), errors.Wrap(err, "worker could not execute query")
 	}
-
+	debug.Debug("execute query")
 	return time.Since(start), nil
 }
