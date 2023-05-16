@@ -8,8 +8,6 @@ import (
 	"go.uber.org/zap"
 )
 
-var validArgs = []string{"file", "workers", "verbose"}
-
 var (
 	sqlCmd = &cobra.Command{
 		Use:       "sql",

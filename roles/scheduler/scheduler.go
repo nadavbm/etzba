@@ -52,6 +52,7 @@ func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, co
 		ConfigFile:      configFile,
 		HelpersFile:     helperFile,
 		numberOfWorkers: workers,
+		Verbose:         verbose,
 	}, nil
 }
 
