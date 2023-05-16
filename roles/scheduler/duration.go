@@ -32,6 +32,9 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 		go func(num int) {
 			defer wg.Done()
 			for a := range s.tasksChan {
+				if s.Verbose {
+					s.Logger.Info(fmt.Sprintf("worker %d execute task %v", num, &a))
+				}
 				duration, resp, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not execute task %v", &a), zap.Error(err))

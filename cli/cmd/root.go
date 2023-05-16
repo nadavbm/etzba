@@ -13,12 +13,14 @@ import (
 // global vars for command args
 var (
 	duration     string
+	rps          int
 	workersCount int
 	configFile   string
 	helpersFile  string
 	seedFile     string
 	outputFile   string
 	Verbose      bool
+	validArgs    = []string{"helpers", "config", "workers", "verbose", "output", "seed", "duration", "rps"}
 )
 
 var (

@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -31,6 +32,10 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 		go func(num int) {
 			defer wg.Done()
 			for a := range workCh {
+				if s.Verbose {
+					s.Logger.Info(fmt.Sprintf("worker %d execute task %v", num, &a))
+				}
+
 				duration, resp, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Fatal("could not execute task from assignment", zap.Error(err))
