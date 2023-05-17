@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/zlog"
 	"gopkg.in/yaml.v2"
@@ -55,7 +54,6 @@ func (a *Authenticator) GetSQLAuth() (*SqlAuth, error) {
 	if err != nil {
 		return nil, err
 	}
-	debug.Debug("secret", secret)
 	return &secret.SqlAuth, nil
 }
 

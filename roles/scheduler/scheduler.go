@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/worker"
@@ -77,7 +76,6 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 			s.Logger.Fatal("could not set api worker assignments")
 			return nil, err
 		}
-		debug.Debug("assignments", assignments)
 		return assignments, nil
 	case s.ExecutionType == "sql":
 		data, err := s.reader.ReadCSVFile(s.HelpersFile)
@@ -102,7 +100,6 @@ func (s *Scheduler) setAPIAssignmentsToWorkers(data []byte) ([]worker.Assignment
 		}
 	case strings.HasSuffix(s.HelpersFile, ".yaml"):
 		if err := yaml.Unmarshal(data, &requests); err != nil {
-			debug.Debug("error", err)
 			return nil, err
 		}
 	}
@@ -111,7 +108,6 @@ func (s *Scheduler) setAPIAssignmentsToWorkers(data []byte) ([]worker.Assignment
 		var assignment worker.Assignment
 		assignment.ApiRequest = r
 		assignments = append(assignments, assignment)
-		debug.Debug("assignments", assignments)
 	}
 	return assignments, nil
 }

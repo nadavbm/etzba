@@ -33,7 +33,7 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	debug.Debug("auth", a, auth, secretFile)
+
 	client := &http.Client{}
 	return &Client{
 		Logger: logger,
