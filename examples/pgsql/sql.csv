@@ -1,4 +1,8 @@
 command,table,constraint,columnref,values
-SELECT,results,avg_query_duration BETWEEN 13.0 AND 15.0,,
-SELECT,results,min_query_duration BETWEEN 50.0 AND 60.0,,
-SELECT,results,total_queries BETWEEN 100 AND 200,,
+SELECT,results,avg_duration BETWEEN 13.0 AND 15.0,,
+SELECT,results,min_duration BETWEEN 50.0 AND 60.0,,
+SELECT,results,total BETWEEN 100 AND 200,,
+UPDATE,results,avg_duration BETWEEN 13.0 AND 15.0,avg_duration,14.01
+INSERT,results,,type job_duration avg_duration min_duration med_duration max_duration total,'sql' 66.66 12.32 56.32 31.14 99.90 6
+INSERT,results,,type job_duration avg_duration min_duration med_duration max_duration total,'sql' 66.66 12.32 56.32 31.14 99.90 100
+DELETE,results,total = 100,,
