@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
@@ -52,10 +53,36 @@ type QueryBuilder struct {
 
 // ToSQL get a query builder and return an sql query
 func ToSQL(querySpec *QueryBuilder) string {
+	command := strings.ToUpper(querySpec.Command)
+	constraint := ""
+	if querySpec.Constraint != "" {
+		constraint = fmt.Sprintf("WHERE %s", querySpec.Constraint)
+	}
+
 	switch {
-	case querySpec.Command == "INSERT":
-		return fmt.Sprintf("%s INTO %s (%s) VALUES (%s)", querySpec.Command, querySpec.Table, querySpec.ColumnsRef, querySpec.Values)
+	case command == "INSERT":
+		coulmnsRef := strings.Split(querySpec.ColumnsRef, " ")
+		values := strings.Split(querySpec.Values, " ")
+		columns := ""
+		vals := ""
+		for i := 0; i < len(coulmnsRef); i++ {
+			columns += fmt.Sprintf("%s,", coulmnsRef[i])
+			vals += fmt.Sprintf("%s,", values[i])
+		}
+
+		return fmt.Sprintf("%s INTO %s (%s) VALUES (%s)", command, querySpec.Table, columns, vals)
+	case command == "UPDATE":
+		coulmnsRef := strings.Split(querySpec.ColumnsRef, " ")
+		values := strings.Split(querySpec.Values, " ")
+		setColumnsAndValues := ""
+		for i := 0; i < len(coulmnsRef); i++ {
+			setColumnsAndValues += fmt.Sprintf("%s = %s, ", coulmnsRef[i], values[i])
+		}
+
+		return fmt.Sprintf("%s %s SET %s %s", command, querySpec.Table, setColumnsAndValues, constraint)
+	case command == "DELETE":
+		return fmt.Sprintf("%s FROM %s %s", command, querySpec.Table, constraint)
 	default:
-		return fmt.Sprintf("%s * FROM %s WHERE %s", querySpec.Command, querySpec.Table, querySpec.Constraint)
+		return fmt.Sprintf("%s * FROM %s %s", command, querySpec.Table, constraint)
 	}
 }
