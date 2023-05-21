@@ -41,9 +41,7 @@ api-up:
 	cd examples/api && docker-compose up -d	etzba 
 
 api-seed:
-	curl -X POST http://localhost:8080/v1/signup \
-	   -H 'Content-Type: application/json' \
-	   -d '{"name": "etzba","email": "etzba@etzba.com","password": "Pass1234"}' | jq '.token'
+	cd examples/api && sh seed.sh
 
 run-api-test:
 	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --verbose
