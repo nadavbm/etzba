@@ -53,6 +53,10 @@ api-down:
 	cd examples/api && docker-compose down
 
 # prepare docker for cli tests
-cleanup-docker:
-	docker rm $(docker stop $(docker ps -a -q --filter ancestor=nadavbm/etzba-api-test:v0.0.1 --format="{{.ID}}"))
-	docker rm $(docker stop $(docker ps -a -q --filter ancestor=postgres:14 --format="{{.ID}}"))
+cleanup-docker: cleanup-api cleanup-pg
+
+cleanup-api:
+	docker rm $$(docker stop $$(docker ps -a -q --filter ancestor=nadavbm/etzba-api-test:v0.0.1 --format="{{.ID}}"))
+
+cleanup-pg:
+	docker rm $$(docker stop $$(docker ps -a -q --filter ancestor=postgres:14 --format="{{.ID}}"))
