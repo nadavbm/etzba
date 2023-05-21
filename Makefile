@@ -2,7 +2,7 @@
 # use it as a minimal ci before contributing 
 #
 # all will run unit tests, build cli tool and run it with pgsql and api server
-all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-downdocker 
+all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down 
 
 # go
 go-test:
@@ -36,10 +36,11 @@ pgsql-down:
 api-up:
 	cd examples/api && docker-compose down
 	sleep 3
-	cd examples/api && docker-compose up -d	
+	cd examples/api && docker-compose up -d	pg-database
+	sleep 12
+	cd examples/api && docker-compose up -d	etzba 
 
 api-seed:
-	sleep 12
 	curl -X POST http://localhost:8080/v1/signup \
 	   -H 'Content-Type: application/json' \
 	   -d '{"name": "etzba","email": "etzba@etzba.com","password": "Pass1234"}' | jq '.token'
@@ -52,3 +53,8 @@ run-api-test:
 
 api-down:
 	cd examples/api && docker-compose down
+
+# prepare docker for cli tests
+cleanup-docker:
+	docker rm $(docker stop $(docker ps -a -q --filter ancestor=nadavbm/etzba-api-test:v0.0.1 --format="{{.ID}}"))
+	docker rm $(docker stop $(docker ps -a -q --filter ancestor=postgres:14 --format="{{.ID}}"))
