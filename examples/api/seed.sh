@@ -26,3 +26,5 @@ PAYLOAD=$( jq -n \
 echo payload $PAYLOAD
 
 echo $PAYLOAD > secret.json
+
+sed -i "/token/c\\  token: $TKN" secret.yaml

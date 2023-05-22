@@ -25,8 +25,8 @@ sql-seed:
 run-pgsql-test:
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=10 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=100 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=10 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=100 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
 
 pgsql-down:
 	cd examples/pgsql && docker-compose down
@@ -45,9 +45,9 @@ api-seed:
 
 run-api-test:
 	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --verbose
-	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --duration=3s
-	./etz api --workers=10 --config=examples/api/secret.json --helpers=examples/api/api.json --duration=3s
-	./etz api --workers=100 --config=examples/api/secret.json --helpers=examples/api/api.json --duration=3s
+	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.yaml --duration=3s
+	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=3s
+	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=3s
 
 api-down:
 	cd examples/api && docker-compose down

@@ -75,11 +75,11 @@ func (a *Authenticator) parseSecret() (*Secret, error) {
 
 	var s Secret
 	switch {
-	case strings.HasSuffix(".json", a.SecretFile):
+	case strings.HasSuffix(a.SecretFile, ".json"):
 		if err := json.Unmarshal(bs, &s); err != nil {
 			return nil, err
 		}
-	case strings.HasSuffix(".yaml", a.SecretFile):
+	case strings.HasSuffix(a.SecretFile, ".yaml"):
 		if err := yaml.Unmarshal(bs, &s); err != nil {
 			return nil, err
 		}
