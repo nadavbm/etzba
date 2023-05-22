@@ -21,4 +21,5 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
