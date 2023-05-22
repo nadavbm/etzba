@@ -29,7 +29,7 @@ type Scheduler struct {
 	// jobDuration is how long the command should run (30s, 1m etc)
 	jobDuration time.Duration
 	// jobRps define the frequency for api requests or sql queries during the job execution
-	jobRps int
+	jobRps int64
 	// tasksOrder defined by api request or sql query weight. The weight cann be defined in the config file and order tasks in the worker assignment channel by calculating the weight of each task
 	tasksOrder []int
 	// ExecutionType from command line arg can be sql, api or other type of executions
@@ -43,12 +43,13 @@ type Scheduler struct {
 }
 
 // NewScheduler creates an instance of a Scheduler
-func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, configFile, helperFile string, workers int, verbose bool) (*Scheduler, error) {
+func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, configFile, helperFile string, rps, workers int, verbose bool) (*Scheduler, error) {
 	return &Scheduler{
 		Logger:          logger,
 		tasksChan:       make(workerChannel, workers),
 		resultsChan:     make(chan time.Duration),
 		jobDuration:     duration,
+		jobRps:          int64(rps),
 		ExecutionType:   executionType,
 		ConfigFile:      configFile,
 		HelpersFile:     helperFile,
