@@ -11,5 +11,7 @@ go-build:
 	mv ../../cli/etz .
 
 run-command:
-	./etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=2s
-	./etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=2s --verbose
+	./etz sql --workers=3 --config=secret.json --helpers=sql.csv
+	./etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=1s
+	./etz sql --workers=3 --config=secret.yaml --helpers=sql.csv --duration=1s --verbose=true
+	./etz sql --workers=3 --config=secret.yaml --helpers=sql.csv

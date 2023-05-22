@@ -56,6 +56,7 @@ func NewSQLWorker(logger *zlog.Logger, secretFile string) (*SQLWorker, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &SQLWorker{
 		Logger:    logger,
 		SqlClient: sqlClient,

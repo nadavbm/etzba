@@ -40,7 +40,6 @@ CREATE TABLE results (
 INSERT INTO migrations (name) VALUES ('create-results-table');
 END $$;
 
-
 --
 -- Name: data; Description: add data to results table
 --
