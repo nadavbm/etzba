@@ -131,13 +131,3 @@ func concatAllDurations(assignmentResults map[string][]time.Duration) []time.Dur
 	}
 	return allDurations
 }
-
-// setRps
-func (s *Scheduler) setRps() time.Duration {
-	var rpsSleepInDurationLoop time.Duration
-	if s.jobRps == 0 {
-		return rpsSleepInDurationLoop
-	}
-	rpsSleepInDurationLoop = time.Duration(int64(1000/s.jobRps) * 1000000)
-	return rpsSleepInDurationLoop
-}

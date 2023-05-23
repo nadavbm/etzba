@@ -3,7 +3,6 @@
 #
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down 
-
 # go
 go-test:
 	go test -v ./...
@@ -24,9 +23,12 @@ sql-seed:
 
 run-pgsql-test:
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose
+	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose --rps=1
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
 	./etz sql --workers=10 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
 	./etz sql --workers=100 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=10 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=5
+	./etz sql --workers=100 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=10
 
 pgsql-down:
 	cd examples/pgsql && docker-compose down
@@ -45,9 +47,12 @@ api-seed:
 
 run-api-test:
 	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --verbose
+	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --verbose --rps=1
 	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.yaml --duration=3s
 	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=3s
 	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=3s
+	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=3s --rps=200
+	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=3s -- rps=400
 
 api-down:
 	cd examples/api && docker-compose down

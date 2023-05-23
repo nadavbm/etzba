@@ -59,6 +59,20 @@ func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, co
 }
 
 //
+// -------------------------------------------------------------------------------------------- scheduling work channel --------------------------------------------------------------------------------------------------------------
+//
+
+// setRps returns a duration to sleep (in a second timeframe) that will set the amount of requests per seconds later during job execution
+func (s *Scheduler) setRps() time.Duration {
+	var rpsSleepInDurationLoop time.Duration
+	if s.jobRps == 0 {
+		return rpsSleepInDurationLoop
+	}
+	rpsSleepInDurationLoop = time.Duration(int64(1000/s.jobRps) * 1000000)
+	return rpsSleepInDurationLoop
+}
+
+//
 // --------------------------------------------------------------------------------------------- worker assignments -----------------------------------------------------------------------------------------------------------------
 //
 
