@@ -16,6 +16,7 @@ func PrintToTerminal(r *scheduler.Result, collectApiResponses bool) {
 
 func printAllTaskDurations(r *scheduler.Result) {
 	fmt.Println("\nGeneral results: \n================")
+	fmt.Println("")
 	if r.JobDuration != 0 {
 		fmt.Println(fmt.Sprintf("\tjob duration: \t\t%v\t", r.JobDuration))
 	}
@@ -24,9 +25,9 @@ func printAllTaskDurations(r *scheduler.Result) {
 	result := c.GetResult(r.Durations)
 	fmt.Println(fmt.Sprintf("\ttotal processed tasks:  %d\t", result.Total))
 	fmt.Println(fmt.Sprintf("\ttotal processing time:\t%vms", result.TotalJobTime))
+	fmt.Println(fmt.Sprintf("\tavg_duration: \t\t%vms", result.AverageTime))
 	fmt.Println(fmt.Sprintf("\tmin_duration: \t\t%vms", result.MinimumTime))
 	fmt.Println(fmt.Sprintf("\tmed_duration: \t\t%vms", result.MedianTime))
-	fmt.Println(fmt.Sprintf("\tavg_duration: \t\t%vms", result.AverageTime))
 	fmt.Println(fmt.Sprintf("\tmax_duration: \t\t%vms", result.MaximumTime))
 	return
 }
@@ -37,7 +38,7 @@ func printDetailedAssignmentExecutions(r *scheduler.Result, collectApiResponses 
 	for a, d := range r.Assignments {
 		c := calculator.NewCalculator()
 		result := c.GetResult(d)
-		fmt.Println(fmt.Sprintf("\n\t%s: \n\t%s", a, fmt.Sprintf("----------------------------------------------------------------------------------------------------------------------------------")))
+		fmt.Println(fmt.Sprintf("\n\t%s: \n\t%s", a, fmt.Sprintf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")))
 		fmt.Println(fmt.Sprintf("\ttotal executions: \t%d", result.Total))
 		if collectApiResponses {
 			statusCount := getAllResponsesPerAssignment(r.Responses[a])

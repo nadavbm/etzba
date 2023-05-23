@@ -73,6 +73,9 @@ func (s *Scheduler) setRps() time.Duration {
 }
 
 func (s *Scheduler) calculateRequestRate(jobDuration time.Duration, totalExecutions int) int {
+	if (totalExecutions*1000000000)/(int(jobDuration)) < 0 {
+		return totalExecutions
+	}
 	return ((totalExecutions * 1000000000) / (int(jobDuration)))
 }
 
