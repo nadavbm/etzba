@@ -24,6 +24,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 
 	results := make(chan time.Duration)
 	workCh := make(workerChannel)
+	now := time.Now()
 
 	// Start workers
 	var wg sync.WaitGroup
@@ -75,6 +76,8 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}
 
 	res := &Result{
+		JobDuration: time.Since(now),
+		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(allDurations)),
 		Assignments: allAssignmentsExecutionsDurations,
 		Durations:   allDurations,
 		Responses:   allAssignmentsExecutionsResponses,
