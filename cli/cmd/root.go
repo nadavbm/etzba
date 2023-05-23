@@ -46,6 +46,7 @@ func init() {
 	sqlCmd.PersistentFlags().StringVar(&seedFile, "seed", "../../files/seed.sql", "prepare sql instance")
 
 	rootCmd.PersistentFlags().StringVar(&duration, "duration", "", "job duration")
+	rootCmd.PersistentFlags().IntVar(&rps, "rps", 0, "how many requests per second should be executed during the job")
 	rootCmd.PersistentFlags().IntVar(&workersCount, "workers", 1, "workers to run the job")
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", "../../files/config.json", "config file location")
 	rootCmd.PersistentFlags().StringVar(&helpersFile, "helpers", "../../files/helpers.csv", "helpers file location")

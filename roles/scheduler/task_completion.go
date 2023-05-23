@@ -59,8 +59,10 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}()
 
 	// Send work to be done
+	rpsSleepTime := s.setRps()
 	go func() {
 		for _, a := range assignments {
+			time.Sleep(rpsSleepTime)
 			workCh <- a
 		}
 		close(workCh)

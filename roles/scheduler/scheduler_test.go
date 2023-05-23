@@ -6,7 +6,34 @@ import (
 
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
+	"github.com/nadavbm/zlog"
 )
+
+func TestRpsSet(t *testing.T) {
+	logger := zlog.New()
+	duration := time.Duration(3 * time.Second)
+	s, err := NewScheduler(logger, duration, "api", "secret.json", "api.yaml", 10, 2, true)
+	if err != nil {
+		t.Fatal("could not create scheduler instance")
+	}
+
+	rps := s.setRps()
+	if rps != time.Duration(100*time.Millisecond) {
+		t.Errorf("expected rps to be 100ms but instead got %v", rps)
+	}
+
+	s.jobRps = 200
+	rps = s.setRps()
+	if rps != time.Duration(5*time.Millisecond) {
+		t.Errorf("expected rps to be 100ms but instead got %v", rps)
+	}
+
+	s.jobRps = 50
+	rps = s.setRps()
+	if rps != time.Duration(20*time.Millisecond) {
+		t.Errorf("expected rps to be 100ms but instead got %v", rps)
+	}
+}
 
 func TestAppendAssignmentDurationsToConcatDurations(t *testing.T) {
 	sqlQueries := []sqlclient.QueryBuilder{

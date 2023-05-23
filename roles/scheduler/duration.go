@@ -48,7 +48,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 		}(i)
 	}
 
-	go addToWorkChannel(s.jobDuration, s.tasksChan, assignments)
+	go addToWorkChannel(s.setRps(), s.jobDuration, s.tasksChan, assignments)
 
 	go func() {
 		wg.Wait()
@@ -75,7 +75,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 }
 
 // addToWorkChannel will add assignments to work channel and close the channel when the duration time is over
-func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigments []worker.Assignment) {
+func addToWorkChannel(sleepTime, duration time.Duration, c chan worker.Assignment, assigments []worker.Assignment) {
 	defer wg.Done()
 	timer := time.NewTimer(duration)
 
@@ -90,6 +90,7 @@ func addToWorkChannel(duration time.Duration, c chan worker.Assignment, assigmen
 			return
 		default:
 			for _, a := range assigments {
+				time.Sleep(sleepTime)
 				c <- a
 			}
 		}
