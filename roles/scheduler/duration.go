@@ -27,6 +27,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 		panic(err)
 	}
 
+	now := time.Now()
 	wg.Add(s.numberOfWorkers + 3)
 	for i := 0; i < s.numberOfWorkers; i++ {
 		go func(num int) {
@@ -65,6 +66,8 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 	}
 
 	res := &Result{
+		JobDuration: time.Since(now) - time.Second,
+		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(concatAllDurations(allAssignmentsExecutionsDurations))),
 		Assignments: allAssignmentsExecutionsDurations,
 		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
 		Responses:   allAssignmentsExecutionsResponses,
