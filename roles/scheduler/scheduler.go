@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/authenticator"
@@ -186,7 +185,6 @@ func (s *Scheduler) setSQLAssignmentsToWorkers(data [][]string) []worker.Assignm
 func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, *apiclient.Response, error) {
 	switch {
 	case s.ExecutionType == "sql":
-		debug.Debug("connection pool config 1", s.ConnectionPool.Config().ConnConfig)
 		dur, err := s.executeSQLQueryFromAssignment(assignment)
 		return dur, nil, err
 	case s.ExecutionType == "api":
@@ -198,7 +196,6 @@ func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (ti
 
 // executeSQLQueryFromAssignment
 func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
-	debug.Debug("connection pool config 2", s.ConnectionPool.Config().ConnConfig)
 	worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile, s.ConnectionPool)
 	if err != nil {
 		s.Logger.Fatal("could not create worker")

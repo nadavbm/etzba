@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/zlog"
@@ -56,7 +55,6 @@ type SQLWorker struct {
 
 // NewSQLWorker creates an instance of a worker
 func NewSQLWorker(logger *zlog.Logger, secretFile string, pool *pgxpool.Pool) (*SQLWorker, error) {
-	debug.Debug("connection pool config 3", pool.Config().ConnConfig)
 	sqlClient, err := sqlclient.NewClient(logger)
 	if err != nil {
 		return nil, err
@@ -76,6 +74,7 @@ func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, 
 		w.Logger.Error("could not aquire connection to database")
 		return 0, err
 	}
+	defer conn.Release()
 
 	// start to count sql query duration
 	start := time.Now()

@@ -6,14 +6,27 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/pkg/errors"
 )
 
 // executeSelectQuery run SELECT by query specifications
 func (c *Client) executeSelectQuery(querySpecs string, conn *pgxpool.Conn) error {
-	rows, err := conn.Query(context.TODO(), querySpecs)
+	ctx := context.TODO()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+
+	rows, err := tx.Query(ctx, querySpecs)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil
@@ -27,8 +40,20 @@ func (c *Client) executeSelectQuery(querySpecs string, conn *pgxpool.Conn) error
 
 // execQuery execute queries of INSERT, UPDATE and DELETE
 func (c *Client) executeQuery(querySpecs string, conn *pgxpool.Conn) error {
-	debug.Debug("conn 2", conn)
-	_, err := conn.Exec(context.Background(), querySpecs)
+	ctx := context.TODO()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, querySpecs)
 	return err
 }
 
