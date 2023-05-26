@@ -6,20 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/pkg/errors"
 )
 
 // executeSelectQuery run SELECT by query specifications
-func (c *Client) executeSelectQuery(querySpecs string) error {
-	ctx := context.TODO()
-	conn, err := pgx.Connect(ctx, getConnectionString(c.auth))
-	if err != nil {
-		c.Logger.Fatal("could not connet to db")
-		return errors.Wrap(err, "could not connect to database")
-	}
-	defer conn.Close(ctx)
-
+func (c *Client) executeSelectQuery(querySpecs string, conn *pgxpool.Conn) error {
 	rows, err := conn.Query(context.TODO(), querySpecs)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -33,16 +26,9 @@ func (c *Client) executeSelectQuery(querySpecs string) error {
 }
 
 // execQuery execute queries of INSERT, UPDATE and DELETE
-func (c *Client) executeQuery(querySpecs string) error {
-	ctx := context.TODO()
-	conn, err := pgx.Connect(ctx, getConnectionString(c.auth))
-	if err != nil {
-		c.Logger.Fatal("could not connet to db")
-		return errors.Wrap(err, "could not connect to database")
-	}
-	defer conn.Close(ctx)
-
-	_, err = conn.Exec(context.Background(), querySpecs)
+func (c *Client) executeQuery(querySpecs string, conn *pgxpool.Conn) error {
+	debug.Debug("conn 2", conn)
+	_, err := conn.Exec(context.Background(), querySpecs)
 	return err
 }
 
