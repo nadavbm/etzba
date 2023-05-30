@@ -22,6 +22,7 @@ sql-seed:
 	PGPASSWORD=Pass1234 psql -h localhost -U etzba -d etzba < examples/pgsql/seed.sql
 
 run-pgsql-test:
+	ETZ_POSTGRES_DB=etzba ETZ_POSTGRES_HOST=localhost ETZ_POSTGRES_PORT=5432 ETZ_POSTGRES_USER=etzba ETZ_POSTGRES_PASSWORD=Pass1234 ./etz sql --workers=3 --helpers=examples/pgsql/sql.csv --duration=3s
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose --rps=1
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
