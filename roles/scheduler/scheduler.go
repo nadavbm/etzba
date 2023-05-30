@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/apiclient"
+	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
 	"gopkg.in/yaml.v2"
@@ -40,6 +42,10 @@ type Scheduler struct {
 	HelpersFile string
 	// Verbose shows worker executions in terminal
 	Verbose bool
+	// authenticator
+	Authenticator *authenticator.Authenticator
+	// connectionPool
+	ConnectionPool *pgxpool.Pool
 }
 
 // NewScheduler creates an instance of a Scheduler
@@ -55,6 +61,7 @@ func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, co
 		HelpersFile:     helperFile,
 		numberOfWorkers: workers,
 		Verbose:         verbose,
+		Authenticator:   authenticator.NewAuthenticator(logger, configFile),
 	}, nil
 }
 
@@ -189,7 +196,7 @@ func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (ti
 
 // executeSQLQueryFromAssignment
 func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
-	worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile)
+	worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile, s.ConnectionPool)
 	if err != nil {
 		s.Logger.Fatal("could not create worker")
 	}
