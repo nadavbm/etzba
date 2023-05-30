@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/nadavbm/etzba/pkg/env"
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/zlog"
 	"gopkg.in/yaml.v2"
@@ -48,8 +49,35 @@ type SqlAuth struct {
 	Password string `json:"password,omitempty" yaml:"password,omitempty"`
 }
 
+//
+// ------------------------------------------------------------------------------------------ sql auth -------------------------------------------------------------------------------------------------
+//
+
 // GetSQLAuth returns sql authentication params from a secret
 func (a *Authenticator) GetSQLAuth() (*SqlAuth, error) {
+	if getSQLAuthFromEnv() != nil {
+		return getSQLAuthFromEnv(), nil
+	}
+	return a.getSQLAuthFromFile()
+}
+
+// getSQLAuthFromEnv gets secrets from environment variable (if set)
+func getSQLAuthFromEnv() *SqlAuth {
+	var auth SqlAuth
+	if env.DatabaseDB != "" && env.DatabaseHost != "" && env.DatabasePort != 0 && env.DatabaseUser != "" && env.DatabasePass != "" {
+		auth.Database = env.DatabaseDB
+		auth.Host = env.DatabaseHost
+		auth.Port = env.DatabasePort
+		auth.User = env.DatabaseUser
+		auth.Password = env.DatabasePass
+		return &auth
+	}
+
+	return nil
+}
+
+// getSQLAuthFromFile parse secret from a file and returns sql auth
+func (a *Authenticator) getSQLAuthFromFile() (*SqlAuth, error) {
 	secret, err := a.parseSecret()
 	if err != nil {
 		return nil, err
@@ -57,8 +85,33 @@ func (a *Authenticator) GetSQLAuth() (*SqlAuth, error) {
 	return &secret.SqlAuth, nil
 }
 
+//
+// ------------------------------------------------------------------------------------------ api auth -------------------------------------------------------------------------------------------------
+//
+
 // GetAPIAuth returns api authentication params from a secret
 func (a *Authenticator) GetAPIAuth() (*ApiAuth, error) {
+	auth := getAPIAuthFromEnv()
+	if auth != nil {
+		return auth, nil
+	}
+	return a.getAPIAuthFromFile()
+}
+
+// getAPIAuthFromEnv gets secrets from environment variable (if set)
+func getAPIAuthFromEnv() *ApiAuth {
+	var auth ApiAuth
+	if env.ApiToken != "" && env.ApiAuthMethod != "" {
+		auth.Method = env.ApiAuthMethod
+		auth.Token = env.ApiToken
+		return &auth
+	}
+
+	return nil
+}
+
+// GetAPIAuth returns api authentication params from a secret
+func (a *Authenticator) getAPIAuthFromFile() (*ApiAuth, error) {
 	secret, err := a.parseSecret()
 	if err != nil {
 		return nil, err
