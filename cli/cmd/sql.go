@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/scheduler"
@@ -42,7 +41,6 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		logger.Fatal("could not get secret for sql auth from config file")
 	}
 
-	debug.Debug("start connection pool")
 	pool, err := pgxpool.Connect(context.Background(), getConnectionString(auth))
 	if err != nil {
 		logger.Fatal("could not create a db connection pool")
@@ -50,7 +48,6 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 	defer pool.Close()
 
 	s.ConnectionPool = pool
-	debug.Debug("connection pool config", s.ConnectionPool.Config().ConnConfig)
 
 	var result *scheduler.Result
 	if duration != "" {
@@ -70,6 +67,20 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 //
 // ---------------------------------------------------------------------------------- helpers -----------------------------------------------------------------------------------------------------------
 //
+
+func setDBConnectionPool(auth string, workersCount int32) (*pgxpool.Pool, error) {
+	// TODO: using parse config create errors and issue with cli.
+	// change rps to qps for sql and work on accuracy of queries per second
+	connConf, err := pgxpool.ParseConfig(auth)
+	connConf.MaxConns = workersCount
+	connConf.MinConns = 10
+
+	pool, err := pgxpool.ConnectConfig(context.TODO(), connConf)
+	if err != nil {
+		return nil, err
+	}
+	return pool, nil
+}
 
 // getConnectionString return a connection string based on environment vars
 func getConnectionString(auth *authenticator.SqlAuth) string {

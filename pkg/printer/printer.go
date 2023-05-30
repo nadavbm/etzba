@@ -38,7 +38,7 @@ func printDetailedAssignmentExecutions(r *scheduler.Result, collectApiResponses 
 	for a, d := range r.Assignments {
 		c := calculator.NewCalculator()
 		result := c.GetResult(d)
-		fmt.Println(fmt.Sprintf("\n\t%s: \n\t%s", a, fmt.Sprintf("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")))
+		fmt.Println(fmt.Sprintf("\n\t%s: \n\t%s", a, fmt.Sprintf("-------------------------------------------------------------------------------------------------------------------------------------------------------------")))
 		fmt.Println(fmt.Sprintf("\ttotal executions: \t%d", result.Total))
 		if collectApiResponses {
 			statusCount := getAllResponsesPerAssignment(r.Responses[a])

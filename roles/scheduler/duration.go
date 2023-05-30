@@ -49,7 +49,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 		}(i)
 	}
 
-	go addToWorkChannel(s.setRps(), s.jobDuration, s.tasksChan, assignments)
+	go s.addToWorkChannel(s.setRps(), s.jobDuration, s.tasksChan, assignments)
 
 	go func() {
 		wg.Wait()
@@ -78,7 +78,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 }
 
 // addToWorkChannel will add assignments to work channel and close the channel when the duration time is over
-func addToWorkChannel(sleepTime, duration time.Duration, c chan worker.Assignment, assigments []worker.Assignment) {
+func (s *Scheduler) addToWorkChannel(sleepTime, duration time.Duration, c chan worker.Assignment, assigments []worker.Assignment) {
 	defer wg.Done()
 	timer := time.NewTimer(duration)
 
@@ -88,6 +88,7 @@ func addToWorkChannel(sleepTime, duration time.Duration, c chan worker.Assignmen
 			timer.Stop()
 			fmt.Println(fmt.Sprintf("job completed after %v", duration))
 			wg.Done()
+			// TODO: set max query time and sleep before closing the channl to allow all workers finish their assignment executions.
 			time.Sleep(1 * time.Second)
 			close(c)
 			return

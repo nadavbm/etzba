@@ -2,7 +2,7 @@
 # use it as a minimal ci before contributing 
 #
 # all will run unit tests, build cli tool and run it with pgsql and api server
-all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down 
+all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
 # go
 go-test:
 	go test -v ./...
@@ -27,8 +27,9 @@ run-pgsql-test:
 	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
 	./etz sql --workers=10 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
 	./etz sql --workers=100 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=10 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=5
-	./etz sql --workers=100 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=10
+	./etz sql --workers=20 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=50
+	./etz sql --workers=200 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=500
+	./etz sql --workers=400 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=1000
 
 pgsql-down:
 	cd examples/pgsql && docker-compose down
