@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.cli.name }}-cfg
+  labels:
+    name: {{ .Values.cli.name }}
+data:
+  helpers.yaml: |-
+    - url: http://{{ .Values.api.url }}:{{ .Values.api.port }}
+      method: GET
+    - url: http://{{ .Values.api.url }}:{{ .Values.api.port }}
+      method: POST
+      payload: '[{"type":"api","job_dation":65.65,"avg_duration":12.32,"min_duration":56.32,"med_duration":31.14,"max_duration":99.9,"total":10},{"Type":"api","job_duration":45.45,"avg_duration":11.12,"min_duration":49.19,"med_duration":32.34,"max_duration":90.91,"total":21},{"Type":"api","job_duration":51.52,"avg_duration":13.12,"min_duration":54.43,"med_duration":32.32,"max_duration":87.98,"total":109},{"Type":"api","job_duration":54.54,"avg_duration":14.14,"min_duration":56.29,"med_duration":35.87,"max_duration":86.21,"total":230},{"Type":"api","job_duration":56.56,"avg_duration":11.23,"min_duration":51.15,"med_duration":38.12,"max_duration":84.32,"total":509},{"Type":"api","job_duration":45.45,"avg_duration":14.22,"min_duration":54.11,"med_duration":36.11,"max_duration":81.22,"total":15},{"Type":"sql","job_duration":66.66,"avg_duration":12.32,"min_duration":56.32,"med_duration":31.14,"max_duration":99.9,"total":67},{"Type":"sql","job_duration":55.55,"avg_duration":11.12,"min_duration":49.19,"med_duration":32.34,"max_duration":90.91,"total":107},{"Type":"sql","job_duration":44.44,"avg_duration":13.12,"min_duration":54.43,"med_duration":32.32,"max_duration":87.98,"total":279},{"Type":"sql","job_duration":34.34,"avg_duration":14.14,"min_duration":56.29,"med_duration":35.87,"max_duration":86.21,"total":78}]'

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Values.api.name}}
+  name: {{ .Values.api.name}}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.api.name}}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.api.name}}
+    spec:
+      containers:
+        - name: {{ .Values.api.name}}
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .Values.api.containerPort }}
+              name: http-etzba
+              protocol: TCP   
+          resources:
+            limits:
+              cpu: {{ .Values.api.resources.limits.cpu }}
+              memory: {{ .Values.api.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.api.resources.requests.cpu }}
+              memory: {{ .Values.api.resources.requests.memory }}
+          env:
+          - name: DATABASE_NAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.pg.name }}-sec
+                key: postgres_database
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.pg.name }}-sec
+                key: postgres_user
+          - name: DATABASE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.pg.name }}-sec
+                key: postgres_password
+          - name: DATABASE_SSL
+            value: disable
+          - name: DATABASE_PORT
+            value: "5432"
+          - name: DATABASE_HOST
+            value: etzba-pg-svc
