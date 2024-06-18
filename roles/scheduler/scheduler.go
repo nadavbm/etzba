@@ -96,7 +96,7 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	case s.ExecutionType == "api":
 		data, err := s.reader.ReadFile(s.HelpersFile)
 		if err != nil {
-			s.Logger.Fatal("could not read json file")
+			s.Logger.Fatal("could not read helpers file")
 			return nil, err
 		}
 

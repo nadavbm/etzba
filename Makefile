@@ -2,10 +2,10 @@
 # use it as a minimal ci before contributing 
 #
 # TAG docker image tag
-TAG=1.0.0
+TAG=latest
 REPO=nadavbm/etzba
 # all will run unit tests, build cli tool and run it with pgsql and api server
-all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
+all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down docker-build
 # go
 go-test:
 	go test -v ./...
