@@ -3,12 +3,19 @@ kind: Job
 metadata:
   name: {{ .Values.cli.name }}
 spec:
+  #activeDeadlineSeconds: 30
+  completions: 3
+  parallelism: 1
   template:
     spec:
       containers:
       - name: {{ .Values.cli.name }}
         image: {{ .Values.cli.image.repository }}:{{ .Values.cli.image.tag }}
-        command: [ "./etz", "api", "--workers=3", "--helpers=/data/helpers.yaml", "--verbose" ]
+        command: [ "./etz", "api", "--helpers=/data/helpers.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 20"]
         env:
         - name: ETZ_API_AUTH_METHOD
           valueFrom:
@@ -28,5 +35,5 @@ spec:
         - name: {{ .Values.cli.name }}-cfg
           configMap:
             name: {{ .Values.cli.name }}-cfg
-      restartPolicy: Never
+      restartPolicy: OnFailure
   backoffLimit: 4

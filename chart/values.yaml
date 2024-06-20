@@ -26,7 +26,7 @@ api:
     repository: nadavbm/etzba-api-test
     pullPolicy: IfNotPresent
     tag: "latest"
-  url: api.etzba.svc.local
+  url: etzba-api-svc
   containerPort: 8080
   resources:
     limits:

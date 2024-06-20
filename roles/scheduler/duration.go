@@ -18,7 +18,7 @@ var mutex = &sync.Mutex{}
 func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
-		s.Logger.Fatal("could not create assignments")
+		s.Logger.Fatal("could not create assignments", zap.Error(err))
 		panic(err)
 	}
 

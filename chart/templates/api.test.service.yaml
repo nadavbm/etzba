@@ -3,11 +3,11 @@ kind: Service
 metadata:
   name: {{ .Values.api.name }}-svc
 spec:
-  type: NodePort
+  #type: NodePort
   selector:
-    app.kubernetes.io/name: etzba-api
+    app: {{ .Values.api.name }}
   ports:
   - port: 8080
     targetPort: 8080
     protocol: TCP
-    nodePort: 30001
+    #nodePort: 30001
