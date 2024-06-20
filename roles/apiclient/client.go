@@ -2,7 +2,7 @@ package apiclient
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/nadavbm/etzba/pkg/debug"
@@ -18,12 +18,6 @@ type Client struct {
 	client *http.Client
 	// auth contains authentication method and token for api server
 	auth *authenticator.ApiAuth
-}
-
-// Response is the server response, currently only status and payload
-type Response struct {
-	Status  string `json:"status"`
-	Payload string `json:"payload"`
 }
 
 // NewClient creates an instance of api client
@@ -89,7 +83,7 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 		}
 	}()
 
-	resBody, err := ioutil.ReadAll(resp.Body)
+	resBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		debug.Debug("error2", err)
 		return &Response{
@@ -99,6 +93,8 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 
 	return &Response{
 		Status:  resp.Status,
+		Code:    resp.StatusCode,
+		Headers: resp.Header,
 		Payload: string(resBody),
 	}, nil
 }
