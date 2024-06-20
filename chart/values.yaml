@@ -48,11 +48,11 @@ pg:
   containerPort: 5432
   resources:
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 512Mi
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -60,4 +60,3 @@ pg:
     username: "etzba"
     password: "etzba123"
     database: "etzba"
-
