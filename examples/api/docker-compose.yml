@@ -14,6 +14,7 @@ services:
       - "8080:8080"
     depends_on:
       - pg-database
+    # work with limits: https://stackoverflow.com/questions/52308815/resource-limits-specified-in-docker-compose-yml-not-taken-into-account-by-docker
     deploy:
       resources:
         limits:
