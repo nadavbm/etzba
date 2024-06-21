@@ -21,8 +21,10 @@ type EndpointPattern struct {
 
 // Response is the server response, currently only status and payload
 type Response struct {
-	Status  string      `json:"status"`
-	Code    int         `json:"code"`
-	Headers http.Header `json:"headers"`
-	Payload string      `json:"payload"`
+	Status        string      `json:"status"`
+	Code          int         `json:"code"`
+	Headers       http.Header `json:"headers"`
+	ContentLength int         `json:"contentLength"`
+	Protocol      string      `json:"protocol"`
+	Payload       string      `json:"payload"`
 }
