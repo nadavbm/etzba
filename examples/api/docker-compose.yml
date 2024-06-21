@@ -2,7 +2,7 @@ version: '3'
 
 services:
   etzba:
-    image: nadavbm/etzba-api-test:latest
+    image: nadavbm/etzba-api-test:v1.0.0
     environment:
       - DATABASE_USER=etzba
       - DATABASE_PASSWORD=Pass1234
