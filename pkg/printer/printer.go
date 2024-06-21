@@ -5,16 +5,16 @@ import (
 
 	"github.com/nadavbm/etzba/pkg/calculator"
 	"github.com/nadavbm/etzba/roles/apiclient"
-	"github.com/nadavbm/etzba/roles/scheduler"
+	"github.com/nadavbm/etzba/roles/common"
 )
 
 // PrintToTerminal prints resutls to terminal
-func PrintToTerminal(r *scheduler.Result, collectApiResponses bool) {
+func PrintToTerminal(r *common.Result, collectApiResponses bool) {
 	printAllTaskDurations(r)
 	printDetailedAssignmentExecutions(r, collectApiResponses)
 }
 
-func printAllTaskDurations(r *scheduler.Result) {
+func printAllTaskDurations(r *common.Result) {
 	fmt.Println("\nGeneral results: \n================")
 	fmt.Println("")
 	if r.JobDuration != 0 {
@@ -32,7 +32,7 @@ func printAllTaskDurations(r *scheduler.Result) {
 	return
 }
 
-func printDetailedAssignmentExecutions(r *scheduler.Result, collectApiResponses bool) {
+func printDetailedAssignmentExecutions(r *common.Result, collectApiResponses bool) {
 	fmt.Println("\nDetailed result per assignment: \n===============================")
 
 	for a, d := range r.Assignments {

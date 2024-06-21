@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/nadavbm/etzba/pkg/printer"
+	"github.com/nadavbm/etzba/roles/common"
 	"github.com/nadavbm/etzba/roles/scheduler"
 	"github.com/nadavbm/zlog"
 	"github.com/spf13/cobra"
@@ -31,7 +32,7 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 		logger.Fatal("could not create a scheduler instance", zap.Error(err))
 	}
 
-	var result *scheduler.Result
+	var result *common.Result
 	if duration != "" {
 		result, err = s.ExecuteJobByDuration()
 		if err != nil {

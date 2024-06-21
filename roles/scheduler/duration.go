@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nadavbm/etzba/roles/apiclient"
+	"github.com/nadavbm/etzba/roles/common"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
@@ -15,7 +16,7 @@ var mutex = &sync.Mutex{}
 
 // ExecuteJobByDuration when "--duration=Xx" is given via command line, shceduler will fill work channel with assignments until the job duration is over
 // after execution is completed, it will return the result of the load test
-func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
+func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
 		s.Logger.Fatal("could not create assignments", zap.Error(err))
@@ -65,7 +66,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 		}
 	}
 
-	res := &Result{
+	res := &common.Result{
 		JobDuration: time.Since(now) - time.Second,
 		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(concatAllDurations(allAssignmentsExecutionsDurations))),
 		Assignments: allAssignmentsExecutionsDurations,

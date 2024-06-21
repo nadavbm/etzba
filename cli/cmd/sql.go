@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/authenticator"
+	"github.com/nadavbm/etzba/roles/common"
 	"github.com/nadavbm/etzba/roles/scheduler"
 	"github.com/nadavbm/zlog"
 	"github.com/spf13/cobra"
@@ -49,7 +50,7 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 
 	s.ConnectionPool = pool
 
-	var result *scheduler.Result
+	var result *common.Result
 	if duration != "" {
 		result, err = s.ExecuteJobByDuration()
 		if err != nil {

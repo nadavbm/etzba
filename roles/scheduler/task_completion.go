@@ -5,12 +5,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nadavbm/etzba/roles/common"
 	"go.uber.org/zap"
 )
 
 // ExecuteJobUntilCompletion when omitting '--duration' from the command, this function will execute
 // all assignments from the helpers file until all assignments completed
-func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
+func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
 		s.Logger.Fatal("could not create assignments", zap.Error(err))
@@ -75,7 +76,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 		allDurations = append(allDurations, r)
 	}
 
-	res := &Result{
+	res := &common.Result{
 		JobDuration: time.Since(now),
 		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(allDurations)),
 		Assignments: allAssignmentsExecutionsDurations,
