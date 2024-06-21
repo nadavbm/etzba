@@ -66,15 +66,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 		}
 	}
 
-	res := &common.Result{
-		JobDuration: time.Since(now) - time.Second,
-		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(concatAllDurations(allAssignmentsExecutionsDurations))),
-		Assignments: allAssignmentsExecutionsDurations,
-		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
-		Responses:   allAssignmentsExecutionsResponses,
-	}
-
-	return res, nil
+	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 
 }
 

@@ -70,19 +70,5 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 		close(workCh)
 	}()
 
-	var allDurations []time.Duration
-	// Process results
-	for r := range results {
-		allDurations = append(allDurations, r)
-	}
-
-	res := &common.Result{
-		JobDuration: time.Since(now),
-		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(allDurations)),
-		Assignments: allAssignmentsExecutionsDurations,
-		Durations:   allDurations,
-		Responses:   allAssignmentsExecutionsResponses,
-	}
-
-	return res, nil
+	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
