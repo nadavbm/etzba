@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pg.name }}-svc
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: {{ .Values.pg.containerPort }}
+    protocol: TCP

@@ -106,7 +106,6 @@ func getAPIAuthFromEnv() *ApiAuth {
 		auth.Token = env.ApiToken
 		return &auth
 	}
-
 	return nil
 }
 

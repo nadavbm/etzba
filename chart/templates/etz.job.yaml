@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.cli.name }}
+spec:
+  #activeDeadlineSeconds: 30
+  completions: 3
+  parallelism: 1
+  template:
+    spec:
+      containers:
+      - name: {{ .Values.cli.name }}
+        image: {{ .Values.cli.image.repository }}:{{ .Values.cli.image.tag }}
+        command: [ "./etz", "api", "--helpers=/data/helpers.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 20"]
+        env:
+        - name: ETZ_API_AUTH_METHOD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.cli.name }}-sec
+              key: method
+        - name: ETZ_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.cli.name }}-sec
+              key: token
+        volumeMounts:
+          - name: {{ .Values.cli.name }}-cfg
+            mountPath: /data/helpers.yaml
+            subPath: helpers.yaml
+      volumes:
+        - name: {{ .Values.cli.name }}-cfg
+          configMap:
+            name: {{ .Values.cli.name }}-cfg
+      restartPolicy: OnFailure
+  backoffLimit: 4

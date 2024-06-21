@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.pg.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: {{ .Values.pg.name }}
+          image: "{{ .Values.pg.image.repository }}:{{ .Values.pg.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: {{ .Values.pg.containerPort }}
+          resources:
+            limits:
+              cpu: {{ .Values.pg.resources.limits.cpu }}
+              memory: {{ .Values.pg.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.pg.resources.requests.cpu }}
+              memory: {{ .Values.pg.resources.requests.memory }}
+          env:
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.pg.name }}-sec
+                key: postgres_database
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.pg.name }}-sec
+                key: postgres_user
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.pg.name }}-sec
+                key: postgres_password

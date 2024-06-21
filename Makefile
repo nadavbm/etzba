@@ -1,12 +1,16 @@
 # this is a simple makefile to test etzba code changes 
 # use it as a minimal ci before contributing 
 #
+# TAG docker image tag
+TAG ?= latest
+REPO ?= nadavbm/etzba
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
 # go
 go-test:
 	go test -v ./...
 
+.PHONY: go-build
 go-build:
 	cd cli && go build -o etz
 	mv cli/etz .
@@ -67,3 +71,12 @@ cleanup-api:
 
 cleanup-pg:
 	docker rm $$(docker stop $$(docker ps -a -q --filter ancestor=postgres:14 --format="{{.ID}}"))
+
+# build image and push to dockerhub
+.PHONY: docker-build
+docker-build:
+	docker build -t ${REPO}:${TAG} .
+
+.PHONY: docker-push
+docker-push: ## Push docker image with the manager.
+	docker push ${REPO}:${TAG}

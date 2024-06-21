@@ -2,7 +2,7 @@ package reader
 
 import (
 	"encoding/csv"
-	"io/ioutil"
+	"io"
 	"os"
 
 	"github.com/nadavbm/zlog"
@@ -29,7 +29,7 @@ func (r *Reader) ReadCSVFile(file string) ([][]string, error) {
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
-			r.logger.Error("failed to close json file", zap.Error(err))
+			r.logger.Error("failed to close csv helper file", zap.Error(err))
 		}
 	}()
 
@@ -47,9 +47,9 @@ func (r *Reader) ReadFile(file string) ([]byte, error) {
 
 	defer func() {
 		if err := osFile.Close(); err != nil {
-			r.logger.Error("failed to close json file", zap.Error(err))
+			r.logger.Error("failed to close helpers file", zap.Error(err))
 		}
 	}()
 
-	return ioutil.ReadAll(osFile)
+	return io.ReadAll(osFile)
 }

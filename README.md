@@ -89,3 +89,15 @@ now we are ready to use the helpers and secret files:
 etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=1s
 ```
 
+### run tests in kubernetes
+
+start minikube:
+
+```
+minikube start
+```
+
+install etzba test environment with helm:
+```
+helm install etzba chart/ -n etzba --create-namespace
+```
