@@ -18,7 +18,7 @@ var mutex = &sync.Mutex{}
 func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
-		s.Logger.Fatal("could not create assignments")
+		s.Logger.Fatal("could not create assignments", zap.Error(err))
 		panic(err)
 	}
 
@@ -89,7 +89,7 @@ func (s *Scheduler) addToWorkChannel(sleepTime, duration time.Duration, c chan w
 			fmt.Println(fmt.Sprintf("job completed after %v", duration))
 			wg.Done()
 			// TODO: set max query time and sleep before closing the channl to allow all workers finish their assignment executions.
-			time.Sleep(1 * time.Second)
+			time.Sleep(3 * time.Second)
 			close(c)
 			return
 		default:

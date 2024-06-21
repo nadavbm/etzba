@@ -23,23 +23,23 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 
 	jobDuration, err := setDurationFromString(duration)
 	if err != nil {
-		logger.Fatal("could set job duration")
+		logger.Fatal("could set job duration", zap.Error(err))
 	}
 
 	s, err := scheduler.NewScheduler(logger, jobDuration, "api", configFile, helpersFile, rps, workersCount, Verbose)
 	if err != nil {
-		logger.Fatal("could not create a scheduler instance")
+		logger.Fatal("could not create a scheduler instance", zap.Error(err))
 	}
 
 	var result *scheduler.Result
 	if duration != "" {
 		result, err = s.ExecuteJobByDuration()
 		if err != nil {
-			s.Logger.Fatal("could not start execution", zap.Error(err))
+			s.Logger.Fatal("could not execute job by duration", zap.Error(err))
 		}
 	} else {
 		if result, err = s.ExecuteJobUntilCompletion(); err != nil {
-			s.Logger.Fatal("could not start execution")
+			s.Logger.Fatal("could not execute job until completion", zap.Error(err))
 		}
 	}
 

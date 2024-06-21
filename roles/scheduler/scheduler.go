@@ -12,6 +12,7 @@ import (
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
@@ -96,20 +97,20 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	case s.ExecutionType == "api":
 		data, err := s.reader.ReadFile(s.HelpersFile)
 		if err != nil {
-			s.Logger.Fatal("could not read json file")
+			s.Logger.Fatal("could not read helpers file", zap.Error(err))
 			return nil, err
 		}
 
 		assignments, err := s.setAPIAssignmentsToWorkers(data)
 		if err != nil {
-			s.Logger.Fatal("could not set api worker assignments")
+			s.Logger.Fatal("could not set api worker assignments", zap.Error(err))
 			return nil, err
 		}
 		return assignments, nil
 	case s.ExecutionType == "sql":
 		data, err := s.reader.ReadCSVFile(s.HelpersFile)
 		if err != nil {
-			s.Logger.Fatal("could not read csv file")
+			s.Logger.Fatal("could not read helpers csv file", zap.Error(err))
 			return nil, err
 		}
 
@@ -198,7 +199,7 @@ func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (ti
 func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
 	worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile, s.ConnectionPool)
 	if err != nil {
-		s.Logger.Fatal("could not create worker")
+		s.Logger.Fatal("could not create new sql worker", zap.Error(err))
 	}
 	return worker.GetSQLQueryDuration(assignment)
 }
@@ -207,7 +208,7 @@ func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment)
 func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, *apiclient.Response) {
 	worker, err := worker.NewAPIWorker(s.Logger, s.ConfigFile)
 	if err != nil {
-		s.Logger.Fatal("could not create worker")
+		s.Logger.Fatal("could not create new api worker", zap.Error(err))
 	}
 	return worker.GetAPIRequestDuration(assigment)
 
