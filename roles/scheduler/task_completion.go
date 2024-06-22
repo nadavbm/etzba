@@ -68,5 +68,11 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 		close(workCh)
 	}()
 
+	var allDurations []time.Duration
+	// Process results before completing the task
+	for r := range results {
+		allDurations = append(allDurations, r)
+	}
+
 	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
