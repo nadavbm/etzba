@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/nadavbm/etzba/roles/common"
@@ -28,7 +27,6 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 	now := time.Now()
 
 	// Start workers
-	var wg sync.WaitGroup
 	wg.Add(s.numberOfWorkers)
 	for i := 0; i < s.numberOfWorkers; i++ {
 		go func(num int) {
@@ -45,8 +43,8 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 
 				title := getAssignmentAsString(a, s.ExecutionType)
 				mutex.Lock()
-				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
-				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
+				allAssignmentsExecutionsDurations = appendDurationsToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
+				allAssignmentsExecutionsResponses = appendResponsesToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
 				mutex.Unlock()
 
 				results <- duration

@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/nadavbm/etzba/roles/apiclient"
@@ -10,9 +9,6 @@ import (
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
-
-var wg sync.WaitGroup
-var mutex = &sync.Mutex{}
 
 // ExecuteJobByDuration when "--duration=Xx" is given via command line, shceduler will fill work channel with assignments until the job duration is over
 // after execution is completed, it will return the result of the load test
@@ -43,8 +39,8 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 				}
 				title := getAssignmentAsString(a, s.ExecutionType)
 				mutex.Lock()
-				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
-				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
+				allAssignmentsExecutionsDurations = appendDurationsToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
+				allAssignmentsExecutionsResponses = appendResponsesToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
 				mutex.Unlock()
 			}
 		}(i)
@@ -94,8 +90,8 @@ func (s *Scheduler) addToWorkChannel(sleepTime, duration time.Duration, c chan w
 	}
 }
 
-// appendDurationToAssignmentResults collect all durations per assignment during job execution for any worker and return a map with all assignments and their durations
-func appendDurationToAssignmentResults(title string, assignmentResults map[string][]time.Duration, duration time.Duration) map[string][]time.Duration {
+// appendDurationsToAssignmentResults collect all durations per assignment during job execution for any worker and return a map with all assignments and their durations
+func appendDurationsToAssignmentResults(title string, assignmentResults map[string][]time.Duration, duration time.Duration) map[string][]time.Duration {
 	for key, val := range assignmentResults {
 		if title == key {
 			val = append(val, duration)
@@ -106,8 +102,8 @@ func appendDurationToAssignmentResults(title string, assignmentResults map[strin
 	return assignmentResults
 }
 
-// appendResponseToAssignmentResults collect all responses from server per assignment
-func appendResponseToAssignmentResults(title string, assignmentResponses map[string][]*apiclient.Response, response *apiclient.Response) map[string][]*apiclient.Response {
+// appendResponsesToAssignmentResults collect all responses from server per assignment
+func appendResponsesToAssignmentResults(title string, assignmentResponses map[string][]*apiclient.Response, response *apiclient.Response) map[string][]*apiclient.Response {
 	for key, val := range assignmentResponses {
 		if title == key {
 			val = append(val, response)

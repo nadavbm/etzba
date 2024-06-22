@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -17,6 +18,9 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
+
+var wg sync.WaitGroup
+var mutex = &sync.Mutex{}
 
 type workerChannel chan worker.Assignment
 type resultsChannel chan time.Duration
