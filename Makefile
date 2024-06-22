@@ -7,6 +7,7 @@ REPO ?= nadavbm/etzba
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
 # go
+.PHONY: go-test
 go-test:
 	go test -v ./...
 
