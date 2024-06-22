@@ -12,6 +12,7 @@ import (
 	"github.com/nadavbm/etzba/pkg/reader"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/authenticator"
+	"github.com/nadavbm/etzba/roles/common"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
@@ -23,7 +24,6 @@ var wg sync.WaitGroup
 var mutex = &sync.Mutex{}
 
 type workerChannel chan worker.Assignment
-type resultsChannel chan time.Duration
 
 // Schduler will schedule workers to work on tasks (sql queries, net icmp or api calls) in a given duration or tasks queue
 type Scheduler struct {
@@ -33,22 +33,8 @@ type Scheduler struct {
 	tasksChan chan worker.Assignment
 	// resultsChan is a channel that collects all tasks results (by time duration - how long the query or request took in milliseconds or seconds) after the worker execute the request \ query and got a response
 	resultsChan chan time.Duration
-	// numberOfWorkers use the "--workers=x" to set the amount of workers while running a load test job
-	numberOfWorkers int
-	// jobDuration is how long the command should run (30s, 1m etc)
-	jobDuration time.Duration
-	// jobRps define the frequency for api requests or sql queries during the job execution
-	jobRps int64
-	// tasksOrder defined by api request or sql query weight. The weight cann be defined in the config file and order tasks in the worker assignment channel by calculating the weight of each task
-	tasksOrder []int
-	// ExecutionType from command line arg can be sql, api or other type of executions
-	ExecutionType string
-	// ConfigFile used for authentication for api server or sql server
-	ConfigFile string
-	// HelpersFile provided via command line tool and contains all assignments for workers
-	HelpersFile string
-	// Verbose shows worker executions in terminal
-	Verbose bool
+	// Settings
+	Settings *common.Settings
 	// authenticator
 	Authenticator *authenticator.Authenticator
 	// connectionPool
@@ -56,41 +42,14 @@ type Scheduler struct {
 }
 
 // NewScheduler creates an instance of a Scheduler
-func NewScheduler(logger *zlog.Logger, duration time.Duration, executionType, configFile, helperFile string, rps, workers int, verbose bool) (*Scheduler, error) {
+func NewScheduler(logger *zlog.Logger, settings *common.Settings) (*Scheduler, error) {
 	return &Scheduler{
-		Logger:          logger,
-		tasksChan:       make(workerChannel, workers),
-		resultsChan:     make(chan time.Duration),
-		jobDuration:     duration,
-		jobRps:          int64(rps),
-		ExecutionType:   executionType,
-		ConfigFile:      configFile,
-		HelpersFile:     helperFile,
-		numberOfWorkers: workers,
-		Verbose:         verbose,
-		Authenticator:   authenticator.NewAuthenticator(logger, configFile),
+		Logger:        logger,
+		tasksChan:     make(workerChannel, settings.NumberOfWorkers),
+		resultsChan:   make(chan time.Duration),
+		Settings:      settings,
+		Authenticator: authenticator.NewAuthenticator(logger, settings.ConfigFile),
 	}, nil
-}
-
-//
-// ----------------------------------------------------------------------------------------- requests limit and rate ----------------------------------------------------------------------------------------------------------------
-//
-
-// setRps returns a duration to sleep (in a second timeframe) that will set the amount of requests per seconds later during job execution
-func (s *Scheduler) setRps() time.Duration {
-	var rpsSleepInDurationLoop time.Duration
-	if s.jobRps == 0 {
-		return rpsSleepInDurationLoop
-	}
-	rpsSleepInDurationLoop = time.Duration(int64(1000/s.jobRps) * 1000000)
-	return rpsSleepInDurationLoop
-}
-
-func (s *Scheduler) calculateRequestRate(jobDuration time.Duration, totalExecutions int) int {
-	if (totalExecutions*1000000000)/(int(jobDuration)) < 0 {
-		return totalExecutions
-	}
-	return ((totalExecutions * 1000000000) / (int(jobDuration)))
 }
 
 //
@@ -100,8 +59,8 @@ func (s *Scheduler) calculateRequestRate(jobDuration time.Duration, totalExecuti
 // setAssignmentsToWorkers will create a slice of assignment from helpers file
 func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	switch {
-	case s.ExecutionType == "api":
-		data, err := s.reader.ReadFile(s.HelpersFile)
+	case s.Settings.ExecutionType == "api":
+		data, err := s.reader.ReadFile(s.Settings.HelpersFile)
 		if err != nil {
 			s.Logger.Fatal("could not read helpers file", zap.Error(err))
 			return nil, err
@@ -113,8 +72,8 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 			return nil, err
 		}
 		return assignments, nil
-	case s.ExecutionType == "sql":
-		data, err := s.reader.ReadCSVFile(s.HelpersFile)
+	case s.Settings.ExecutionType == "sql":
+		data, err := s.reader.ReadCSVFile(s.Settings.HelpersFile)
 		if err != nil {
 			s.Logger.Fatal("could not read helpers csv file", zap.Error(err))
 			return nil, err
@@ -130,11 +89,11 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 func (s *Scheduler) setAPIAssignmentsToWorkers(data []byte) ([]worker.Assignment, error) {
 	var requests []apiclient.ApiRequest
 	switch {
-	case strings.HasSuffix(s.HelpersFile, ".json"):
+	case strings.HasSuffix(s.Settings.HelpersFile, ".json"):
 		if err := json.Unmarshal(data, &requests); err != nil {
 			return nil, err
 		}
-	case strings.HasSuffix(s.HelpersFile, ".yaml"):
+	case strings.HasSuffix(s.Settings.HelpersFile, ".yaml"):
 		if err := yaml.Unmarshal(data, &requests); err != nil {
 			return nil, err
 		}
@@ -191,10 +150,10 @@ func (s *Scheduler) setSQLAssignmentsToWorkers(data [][]string) []worker.Assignm
 // executeTaskFromAssignment will execute sql query or api request from the given worker assignment
 func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (time.Duration, *apiclient.Response, error) {
 	switch {
-	case s.ExecutionType == "sql":
+	case s.Settings.ExecutionType == "sql":
 		dur, err := s.executeSQLQueryFromAssignment(assignment)
 		return dur, nil, err
-	case s.ExecutionType == "api":
+	case s.Settings.ExecutionType == "api":
 		dur, res := s.executeAPIRequestFromAssignment(assignment)
 		return dur, res, nil
 	}
@@ -203,7 +162,7 @@ func (s *Scheduler) executeTaskFromAssignment(assignment *worker.Assignment) (ti
 
 // executeSQLQueryFromAssignment
 func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment) (time.Duration, error) {
-	worker, err := worker.NewSQLWorker(s.Logger, s.ConfigFile, s.ConnectionPool)
+	worker, err := worker.NewSQLWorker(s.Logger, s.Settings.ConfigFile, s.ConnectionPool)
 	if err != nil {
 		s.Logger.Fatal("could not create new sql worker", zap.Error(err))
 	}
@@ -212,7 +171,7 @@ func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment)
 
 // executeAPIRequestFromAssignment
 func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, *apiclient.Response) {
-	worker, err := worker.NewAPIWorker(s.Logger, s.ConfigFile)
+	worker, err := worker.NewAPIWorker(s.Logger, s.Settings.ConfigFile)
 	if err != nil {
 		s.Logger.Fatal("could not create new api worker", zap.Error(err))
 	}
@@ -227,8 +186,8 @@ func (s *Scheduler) prepareAssignmentsForResultCollection(assignments []worker.A
 	var allAPIResponses []*apiclient.Response
 	var allDurations []time.Duration
 	for _, a := range assignments {
-		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
-		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.ExecutionType)] = allAPIResponses
+		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.Settings.ExecutionType)] = allDurations
+		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.Settings.ExecutionType)] = allAPIResponses
 	}
 
 	return allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses, nil
@@ -244,7 +203,7 @@ func getAssignmentAsString(a worker.Assignment, command string) string {
 	case command == "api":
 		return fmt.Sprintf("URL: %s, Method: %s", a.ApiRequest.Url, a.ApiRequest.Method)
 	case command == "sql":
-		return fmt.Sprintf("%s", sqlclient.ToSQL(&a.SqlQuery))
+		return sqlclient.ToSQL(&a.SqlQuery)
 	}
 	return ""
 }

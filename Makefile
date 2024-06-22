@@ -6,6 +6,8 @@ TAG ?= latest
 REPO ?= nadavbm/etzba
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
+pg: pgsql-up sql-seed run-pgsql-test pgsql-down
+api: api-up api-seed run-api-test api-down
 # go
 .PHONY: go-test
 go-test:
@@ -60,7 +62,6 @@ run-api-test:
 	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=3s
 	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=10s --rps=200
 	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=10s -- rps=400
-
 api-down:
 	cd examples/api && docker-compose down
 

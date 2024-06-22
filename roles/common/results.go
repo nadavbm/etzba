@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/nadavbm/etzba/pkg/calculator"
@@ -40,9 +39,7 @@ type Durations struct {
 }
 
 func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
-	fmt.Println("assignments", assignmentsDurations, allAssignmentsExecutionsResponses)
 	allDurations := concatAllDurations(assignmentsDurations)
-	fmt.Println("duration", allDurations)
 	general := General{
 		JobDuration:     jobDuration,
 		TotalExeuctions: len(allDurations),
@@ -85,9 +82,7 @@ func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[stri
 func concatAllDurations(assignmentsDurations map[string][]time.Duration) []time.Duration {
 	var allDurations []time.Duration
 	for _, val := range assignmentsDurations {
-		for _, dur := range val {
-			allDurations = append(allDurations, dur)
-		}
+		allDurations = append(allDurations, val...)
 	}
 	return allDurations
 }

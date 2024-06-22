@@ -32,7 +32,8 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		logger.Fatal("could set job duration", zap.Error(err))
 	}
 
-	s, err := scheduler.NewScheduler(logger, jobDuration, "sql", configFile, helpersFile, rps, workersCount, Verbose)
+	settings := common.GetSettings(jobDuration, "sql", configFile, helpersFile, rps, workersCount, Verbose)
+	s, err := scheduler.NewScheduler(logger, settings)
 	if err != nil {
 		logger.Fatal("could not create a scheduler instance", zap.Error(err))
 	}

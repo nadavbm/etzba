@@ -57,6 +57,6 @@ func TestAppendAssignmentDurationsToConcatDurations(t *testing.T) {
 	}
 
 	if allDurations[4] != time.Duration(13.523*float64(time.Millisecond)) {
-		t.Error("expected 13.523ms got ", allDurations[4])
+		t.Error("expected 13.123ms got ", allDurations[4])
 	}
 }

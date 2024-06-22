@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/nadavbm/etzba/roles/common"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
@@ -11,25 +12,33 @@ import (
 
 func TestRpsSet(t *testing.T) {
 	logger := zlog.New()
-	duration := time.Duration(3 * time.Second)
-	s, err := NewScheduler(logger, duration, "api", "secret.json", "api.yaml", 10, 2, true)
+	settings := common.Settings{
+		Duration:        time.Duration(3 * time.Second),
+		ExecutionType:   "api",
+		ConfigFile:      "secret.json",
+		HelpersFile:     "api.yaml",
+		Rps:             10,
+		NumberOfWorkers: 2,
+		Verbose:         true,
+	}
+	s, err := NewScheduler(logger, &settings)
 	if err != nil {
 		t.Fatal("could not create scheduler instance")
 	}
 
-	rps := s.setRps()
+	rps := s.Settings.SetRps()
 	if rps != time.Duration(100*time.Millisecond) {
 		t.Errorf("expected rps to be 100ms but instead got %v", rps)
 	}
 
-	s.jobRps = 200
-	rps = s.setRps()
+	s.Settings.Rps = 200
+	rps = s.Settings.SetRps()
 	if rps != time.Duration(5*time.Millisecond) {
 		t.Errorf("expected rps to be 100ms but instead got %v", rps)
 	}
 
-	s.jobRps = 50
-	rps = s.setRps()
+	s.Settings.Rps = 50
+	rps = s.Settings.SetRps()
 	if rps != time.Duration(20*time.Millisecond) {
 		t.Errorf("expected rps to be 100ms but instead got %v", rps)
 	}
@@ -144,10 +153,4 @@ func TestAppendAssignmentDurationsToConcatDurations(t *testing.T) {
 	if val[1] != time.Duration(26.12344123*time.Millisecond.Seconds()) {
 		t.Error("expected 26.12344123ms got", val[1])
 	}
-
-	allDurations = concatAllDurations(allAssignmentsExecutions)
-	if allDurations[0] != time.Duration(27.975609756097562*time.Millisecond.Seconds()) {
-		t.Error("expected 27.975609756097562ns got", allDurations[0])
-	}
-
 }

@@ -25,19 +25,19 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 	}
 
 	now := time.Now()
-	wg.Add(s.numberOfWorkers + 3)
-	for i := 0; i < s.numberOfWorkers; i++ {
+	wg.Add(s.Settings.NumberOfWorkers + 3)
+	for i := 0; i < s.Settings.NumberOfWorkers; i++ {
 		go func(num int) {
 			defer wg.Done()
 			for a := range s.tasksChan {
-				if s.Verbose {
+				if s.Settings.Verbose {
 					s.Logger.Info(fmt.Sprintf("worker %d execute task %v", num, &a))
 				}
 				duration, resp, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not execute task %v", &a), zap.Error(err))
 				}
-				title := getAssignmentAsString(a, s.ExecutionType)
+				title := getAssignmentAsString(a, s.Settings.ExecutionType)
 				mutex.Lock()
 				allAssignmentsExecutionsDurations = appendDurationsToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
 				allAssignmentsExecutionsResponses = appendResponsesToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
@@ -46,7 +46,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 		}(i)
 	}
 
-	go s.addToWorkChannel(s.setRps(), s.jobDuration, s.tasksChan, assignments)
+	go s.addToWorkChannel(s.Settings.SetRps(), s.Settings.Duration, s.tasksChan, assignments)
 
 	go func() {
 		wg.Wait()
@@ -54,7 +54,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 
 	for {
 		val, ok := <-s.tasksChan
-		if ok == false {
+		if !ok {
 			wg.Done()
 			break
 		} else {
@@ -63,7 +63,6 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 	}
 
 	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
-
 }
 
 // addToWorkChannel will add assignments to work channel and close the channel when the duration time is over
@@ -75,7 +74,7 @@ func (s *Scheduler) addToWorkChannel(sleepTime, duration time.Duration, c chan w
 		select {
 		case <-timer.C:
 			timer.Stop()
-			fmt.Println(fmt.Sprintf("job completed after %v", duration))
+			s.Logger.Info("job completed after", zap.Any("duration", duration.Seconds()))
 			wg.Done()
 			// TODO: set max query time and sleep before closing the channl to allow all workers finish their assignment executions.
 			time.Sleep(3 * time.Second)
@@ -112,15 +111,4 @@ func appendResponsesToAssignmentResults(title string, assignmentResponses map[st
 	}
 
 	return assignmentResponses
-}
-
-// concatAllDurations from assignment results to return durations from all assignments
-func concatAllDurations(assignmentResults map[string][]time.Duration) []time.Duration {
-	var allDurations []time.Duration
-	for _, val := range assignmentResults {
-		for _, dur := range val {
-			allDurations = append(allDurations, dur)
-		}
-	}
-	return allDurations
 }
