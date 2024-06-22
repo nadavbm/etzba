@@ -28,12 +28,12 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 
 	// Start workers
 	var wg sync.WaitGroup
-	wg.Add(s.numberOfWorkers)
-	for i := 0; i < s.numberOfWorkers; i++ {
+	wg.Add(s.Settings.NumberOfWorkers)
+	for i := 0; i < s.Settings.NumberOfWorkers; i++ {
 		go func(num int) {
 			defer wg.Done()
 			for a := range workCh {
-				if s.Verbose {
+				if s.Settings.Verbose {
 					s.Logger.Info(fmt.Sprintf("worker %d execute task %v", num, &a))
 				}
 
@@ -42,7 +42,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 					s.Logger.Fatal("could not execute task from assignment", zap.Error(err))
 				}
 
-				title := getAssignmentAsString(a, s.ExecutionType)
+				title := getAssignmentAsString(a, s.Settings.ExecutionType)
 				mutex.Lock()
 				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
 				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
@@ -60,7 +60,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}()
 
 	// Send work to be done
-	rpsSleepTime := s.setRps()
+	rpsSleepTime := s.Settings.SetRps()
 	go func() {
 		for _, a := range assignments {
 			time.Sleep(rpsSleepTime)
@@ -77,7 +77,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 
 	res := &Result{
 		JobDuration: time.Since(now),
-		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(allDurations)),
+		RequestRate: calculateRequestRate(time.Since(now)-time.Second, len(allDurations)),
 		Assignments: allAssignmentsExecutionsDurations,
 		Durations:   allDurations,
 		Responses:   allAssignmentsExecutionsResponses,

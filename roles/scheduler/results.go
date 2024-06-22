@@ -27,8 +27,8 @@ func (s *Scheduler) prepareAssignmentsForResultCollection(assignments []worker.A
 	var allAPIResponses []*apiclient.Response
 	var allDurations []time.Duration
 	for _, a := range assignments {
-		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.ExecutionType)] = allDurations
-		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.ExecutionType)] = allAPIResponses
+		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.Settings.ExecutionType)] = allDurations
+		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.Settings.ExecutionType)] = allAPIResponses
 	}
 
 	return allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses, nil

@@ -61,7 +61,6 @@ run-api-test:
 	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=3s
 	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=10s --rps=200
 	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=10s -- rps=400
-
 api-down:
 	cd examples/api && docker-compose down
 

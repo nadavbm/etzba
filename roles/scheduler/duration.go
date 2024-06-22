@@ -28,19 +28,19 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 	}
 
 	now := time.Now()
-	wg.Add(s.numberOfWorkers + 3)
-	for i := 0; i < s.numberOfWorkers; i++ {
+	wg.Add(s.Settings.NumberOfWorkers + 3)
+	for i := 0; i < s.Settings.NumberOfWorkers; i++ {
 		go func(num int) {
 			defer wg.Done()
 			for a := range s.tasksChan {
-				if s.Verbose {
+				if s.Settings.Verbose {
 					s.Logger.Info(fmt.Sprintf("worker %d execute task %v", num, &a))
 				}
 				duration, resp, err := s.executeTaskFromAssignment(&a)
 				if err != nil {
 					s.Logger.Error(fmt.Sprintf("worker could not execute task %v", &a), zap.Error(err))
 				}
-				title := getAssignmentAsString(a, s.ExecutionType)
+				title := getAssignmentAsString(a, s.Settings.ExecutionType)
 				mutex.Lock()
 				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
 				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
@@ -49,7 +49,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 		}(i)
 	}
 
-	go s.addToWorkChannel(s.setRps(), s.jobDuration, s.tasksChan, assignments)
+	go s.addToWorkChannel(s.Settings.SetRps(), s.Settings.Duration, s.tasksChan, assignments)
 
 	go func() {
 		wg.Wait()
@@ -67,7 +67,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*Result, error) {
 
 	res := &Result{
 		JobDuration: time.Since(now) - time.Second,
-		RequestRate: s.calculateRequestRate(time.Since(now)-time.Second, len(concatAllDurations(allAssignmentsExecutionsDurations))),
+		RequestRate: calculateRequestRate(time.Since(now)-time.Second, len(concatAllDurations(allAssignmentsExecutionsDurations))),
 		Assignments: allAssignmentsExecutionsDurations,
 		Durations:   concatAllDurations(allAssignmentsExecutionsDurations),
 		Responses:   allAssignmentsExecutionsResponses,
