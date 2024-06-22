@@ -1,5 +1,9 @@
 package apiclient
 
+import (
+	"net/http"
+)
+
 type ApiRequest struct {
 	Url             string          `json:"url,omitempty" yaml:"url"`
 	Method          string          `json:"method,omitempty" yaml:"method"`
@@ -15,7 +19,12 @@ type EndpointPattern struct {
 	Regex      string `json:"regex,omitempty"`
 }
 
-type ApiResponse struct {
-	Status  int    `json:"status,omitempty"`
-	Payload []byte `json:"payload,omitempty"`
+// Response is the server response, currently only status and payload
+type Response struct {
+	Status        string      `json:"status"`
+	Code          int         `json:"code"`
+	Headers       http.Header `json:"headers"`
+	ContentLength int         `json:"contentLength"`
+	Protocol      string      `json:"protocol"`
+	Payload       string      `json:"payload"`
 }

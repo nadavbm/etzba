@@ -37,6 +37,8 @@ func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration
 	response, err := w.ApiClient.ExecuteAPIRequest(translateAssignmentToAPIRequest(assignment))
 	resp := &apiclient.Response{
 		Status:  response.Status,
+		Code:    response.Code,
+		Headers: response.Headers,
 		Payload: response.Payload,
 	}
 	if err != nil {
