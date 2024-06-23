@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/nadavbm/etzba/pkg/env"
-	"github.com/nadavbm/etzba/pkg/reader"
+	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/zlog"
 	"gopkg.in/yaml.v2"
 )
@@ -13,7 +13,7 @@ import (
 // Authenticator takes a secret file and authenticate to sql or api server
 type Authenticator struct {
 	Logger     *zlog.Logger
-	reader     *reader.Reader
+	reader     *filer.Reader
 	SecretFile string
 }
 
@@ -21,7 +21,7 @@ type Authenticator struct {
 func NewAuthenticator(logger *zlog.Logger, secretFile string) *Authenticator {
 	return &Authenticator{
 		Logger:     logger,
-		reader:     reader.NewReader(logger),
+		reader:     filer.NewReader(logger),
 		SecretFile: secretFile,
 	}
 }

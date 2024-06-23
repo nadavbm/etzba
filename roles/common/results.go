@@ -42,7 +42,7 @@ type Durations struct {
 func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
 	allDurations := concatAllDurations(assignmentsDurations)
 	general := General{
-		JobDuration:     jobDuration,
+		JobDuration:     time.Duration(jobDuration.Seconds()),
 		TotalExeuctions: len(allDurations),
 		RequestRate:     calculateRequestRate(jobDuration, len(allDurations)),
 		ProcessedDurations: Durations{
@@ -65,9 +65,11 @@ func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[stri
 				MaximumTime: calculator.GetMaximumTime(durations),
 			},
 		}
+		var apiResponses []*apiclient.Response
 		for t, responses := range allAssignmentsExecutionsResponses {
-			if t == title {
-				assigment.ApiResponses = responses
+			if t == title && responses[0] != nil {
+				apiResponses = append(apiResponses, responses...)
+				assigment.ApiResponses = apiResponses
 			}
 		}
 		assignments = append(assignments, assigment)

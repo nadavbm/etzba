@@ -15,12 +15,11 @@ var (
 	duration     string
 	rps          int
 	workersCount int
+	authFile     string
 	configFile   string
-	helpersFile  string
-	seedFile     string
 	outputFile   string
 	Verbose      bool
-	validArgs    = []string{"helpers", "config", "workers", "verbose", "output", "seed", "duration", "rps"}
+	validArgs    = []string{"duration", "rps", "workers", "auth", "config", "output", "verbose"}
 )
 
 var (
@@ -43,13 +42,12 @@ func Execute() {
 }
 
 func init() {
-	sqlCmd.PersistentFlags().StringVar(&seedFile, "seed", "../../files/seed.sql", "prepare sql instance")
-
 	rootCmd.PersistentFlags().StringVar(&duration, "duration", "", "job duration")
 	rootCmd.PersistentFlags().IntVar(&rps, "rps", 0, "how many requests per second should be executed during the job")
 	rootCmd.PersistentFlags().IntVar(&workersCount, "workers", 1, "workers to run the job")
-	rootCmd.PersistentFlags().StringVar(&configFile, "config", "../../files/config.json", "config file location")
-	rootCmd.PersistentFlags().StringVar(&helpersFile, "helpers", "../../files/helpers.csv", "helpers file location")
+	rootCmd.PersistentFlags().StringVar(&authFile, "auth", "../../files/secret.json", "authentication file location")
+	rootCmd.PersistentFlags().StringVar(&configFile, "config", "../../files/config.csv", "config file location")
+	rootCmd.PersistentFlags().StringVar(&outputFile, "output", "results.json", "results file output location")
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 
 	rootCmd.AddCommand(versionCmd)
@@ -58,7 +56,6 @@ func init() {
 	rootCmd.AddCommand(apiCmd)
 }
 
-//
 // ----------------------------------------------------------------------------------------- helpers --------------------------------------------------------------------
 //
 // setDurationFromString get a string in a form of 30s (seconds) 12m (minutes) 1h (hours) and return the duration

@@ -7,7 +7,7 @@ go-build:
 	mv ../../cli/etz .
 
 run-command:
-	./etz api --workers=3 --config=secret.json --helpers=api.json
-	./etz api --workers=3 --config=secret.json --helpers=api.json --duration=1s
-	./etz api --workers=3 --config=secret.yaml --helpers=api.yaml --duration=1s --verbose=true
-	./etz api --workers=3 --config=secret.yaml --helpers=api.yaml
+	./etz api --workers=3 --auth=secret.json --config=api.json
+	./etz api --workers=3 --auth=secret.json --config=api.json --duration=1s
+	./etz api --workers=3 --auth=secret.yaml --config=api.yaml --duration=1s --verbose=true
+	./etz api --workers=3 --auth=secret.yaml --config=api.yaml

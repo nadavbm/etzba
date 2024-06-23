@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/common"
@@ -32,7 +33,7 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		logger.Fatal("could set job duration", zap.Error(err))
 	}
 
-	settings := common.GetSettings(jobDuration, "sql", configFile, helpersFile, rps, workersCount, Verbose)
+	settings := common.GetSettings(jobDuration, "sql", authFile, configFile, outputFile, rps, workersCount, Verbose)
 	s, err := scheduler.NewScheduler(logger, settings)
 	if err != nil {
 		logger.Fatal("could not create a scheduler instance", zap.Error(err))
@@ -60,6 +61,13 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 	} else {
 		if result, err = s.ExecuteJobUntilCompletion(); err != nil {
 			s.Logger.Fatal("could not execute job until completion", zap.Error(err))
+		}
+	}
+
+	if outputFile != "" {
+		w := filer.NewWriter(logger)
+		if err := w.WriteFile(outputFile, result); err != nil {
+			logger.Error("could not write result to file", zap.Any("result", result), zap.Error(err))
 		}
 	}
 

@@ -15,8 +15,8 @@ func TestRpsSet(t *testing.T) {
 	settings := common.Settings{
 		Duration:        time.Duration(3 * time.Second),
 		ExecutionType:   "api",
-		ConfigFile:      "secret.json",
-		HelpersFile:     "api.yaml",
+		AuthFile:        "secret.json",
+		ConfigFile:      "api.yaml",
 		Rps:             10,
 		NumberOfWorkers: 2,
 		Verbose:         true,

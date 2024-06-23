@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/nadavbm/etzba/pkg/reader"
+	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/common"
@@ -28,7 +28,7 @@ type workerChannel chan worker.Assignment
 // Schduler will schedule workers to work on tasks (sql queries, net icmp or api calls) in a given duration or tasks queue
 type Scheduler struct {
 	Logger *zlog.Logger
-	reader *reader.Reader
+	reader *filer.Reader
 	//tasksChan is a channel for worker assignment. The scheduler will use this channel to scedule the amount \ frequency or weight of the worker assignment
 	tasksChan chan worker.Assignment
 	// resultsChan is a channel that collects all tasks results (by time duration - how long the query or request took in milliseconds or seconds) after the worker execute the request \ query and got a response
@@ -48,7 +48,7 @@ func NewScheduler(logger *zlog.Logger, settings *common.Settings) (*Scheduler, e
 		tasksChan:     make(workerChannel, settings.NumberOfWorkers),
 		resultsChan:   make(chan time.Duration),
 		Settings:      settings,
-		Authenticator: authenticator.NewAuthenticator(logger, settings.ConfigFile),
+		Authenticator: authenticator.NewAuthenticator(logger, settings.AuthFile),
 	}, nil
 }
 
@@ -56,13 +56,13 @@ func NewScheduler(logger *zlog.Logger, settings *common.Settings) (*Scheduler, e
 // --------------------------------------------------------------------------------------------- worker assignments -----------------------------------------------------------------------------------------------------------------
 //
 
-// setAssignmentsToWorkers will create a slice of assignment from helpers file
+// setAssignmentsToWorkers will create a slice of assignment from config file
 func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	switch {
 	case s.Settings.ExecutionType == "api":
-		data, err := s.reader.ReadFile(s.Settings.HelpersFile)
+		data, err := s.reader.ReadFile(s.Settings.ConfigFile)
 		if err != nil {
-			s.Logger.Fatal("could not read helpers file", zap.Error(err))
+			s.Logger.Fatal("could not read config file", zap.Error(err))
 			return nil, err
 		}
 
@@ -73,9 +73,9 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 		}
 		return assignments, nil
 	case s.Settings.ExecutionType == "sql":
-		data, err := s.reader.ReadCSVFile(s.Settings.HelpersFile)
+		data, err := s.reader.ReadCSVFile(s.Settings.ConfigFile)
 		if err != nil {
-			s.Logger.Fatal("could not read helpers csv file", zap.Error(err))
+			s.Logger.Fatal("could not read config csv file", zap.Error(err))
 			return nil, err
 		}
 
@@ -85,15 +85,15 @@ func (s *Scheduler) setAssignmentsToWorkers() ([]worker.Assignment, error) {
 	return nil, errors.New("could not create assignment")
 }
 
-// setAPIAssignmentsToWorkers takes a json helpers file config and prepare worker assignments from config
+// setAPIAssignmentsToWorkers takes a json file config and prepare worker assignments from config
 func (s *Scheduler) setAPIAssignmentsToWorkers(data []byte) ([]worker.Assignment, error) {
 	var requests []apiclient.ApiRequest
 	switch {
-	case strings.HasSuffix(s.Settings.HelpersFile, ".json"):
+	case strings.HasSuffix(s.Settings.ConfigFile, ".json"):
 		if err := json.Unmarshal(data, &requests); err != nil {
 			return nil, err
 		}
-	case strings.HasSuffix(s.Settings.HelpersFile, ".yaml"):
+	case strings.HasSuffix(s.Settings.ConfigFile, ".yaml"):
 		if err := yaml.Unmarshal(data, &requests); err != nil {
 			return nil, err
 		}
@@ -107,7 +107,7 @@ func (s *Scheduler) setAPIAssignmentsToWorkers(data []byte) ([]worker.Assignment
 	return assignments, nil
 }
 
-// setSQLAssignmentsToWorkers will take csv output from helpers file and create assignments for all workers
+// setSQLAssignmentsToWorkers will take csv output from config file and create assignments for all workers
 func (s *Scheduler) setSQLAssignmentsToWorkers(data [][]string) []worker.Assignment {
 	var assignments []worker.Assignment
 	for i, line := range data {
@@ -171,7 +171,7 @@ func (s *Scheduler) executeSQLQueryFromAssignment(assignment *worker.Assignment)
 
 // executeAPIRequestFromAssignment
 func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment) (time.Duration, *apiclient.Response) {
-	worker, err := worker.NewAPIWorker(s.Logger, s.Settings.ConfigFile)
+	worker, err := worker.NewAPIWorker(s.Logger, s.Settings.AuthFile)
 	if err != nil {
 		s.Logger.Fatal("could not create new api worker", zap.Error(err))
 	}
