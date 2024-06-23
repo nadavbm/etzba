@@ -70,7 +70,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 	}()
 
 	var allDurations []time.Duration
-	// Process results before completing the task
+	// Process results before return (This is needed to complete all the tasks and close channels gracefully)
 	for r := range results {
 		allDurations = append(allDurations, r)
 	}
