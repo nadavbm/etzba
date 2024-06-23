@@ -33,10 +33,10 @@ type Assignment struct {
 // Durations compose of total # processed tasks, total processing time for the job, the minimum task time,
 // the median  time, the average  time, and the maximum  time.
 type Durations struct {
-	MinimumTime float64 `json:"min_duration"`
-	MedianTime  float64 `json:"med_duration"`
-	AverageTime float64 `json:"avg_duration"`
-	MaximumTime float64 `json:"max_duration"`
+	MinimumTime float64 `json:"minimumTime"`
+	MedianTime  float64 `json:"medianTime"`
+	AverageTime float64 `json:"averageTime"`
+	MaximumTime float64 `json:"maximumTime"`
 }
 
 func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
