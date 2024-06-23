@@ -9,6 +9,7 @@ all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-see
 pg: pgsql-up sql-seed run-pgsql-test pgsql-down
 api: api-up api-seed run-api-test api-down
 # go
+.PHONY: go-test
 go-test:
 	go test -v ./...
 

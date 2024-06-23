@@ -51,7 +51,7 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 
 	s.ConnectionPool = pool
 
-	var result *scheduler.Result
+	var result *common.Result
 	if duration != "" {
 		result, err = s.ExecuteJobByDuration()
 		if err != nil {

@@ -2,15 +2,15 @@ package scheduler
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
+	"github.com/nadavbm/etzba/roles/common"
 	"go.uber.org/zap"
 )
 
 // ExecuteJobUntilCompletion when omitting '--duration' from the command, this function will execute
 // all assignments from the helpers file until all assignments completed
-func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
+func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
 		s.Logger.Fatal("could not create assignments", zap.Error(err))
@@ -27,7 +27,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	now := time.Now()
 
 	// Start workers
-	var wg sync.WaitGroup
+
 	wg.Add(s.Settings.NumberOfWorkers)
 	for i := 0; i < s.Settings.NumberOfWorkers; i++ {
 		go func(num int) {
@@ -44,8 +44,8 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 
 				title := getAssignmentAsString(a, s.Settings.ExecutionType)
 				mutex.Lock()
-				allAssignmentsExecutionsDurations = appendDurationToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
-				allAssignmentsExecutionsResponses = appendResponseToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
+				allAssignmentsExecutionsDurations = appendDurationsToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
+				allAssignmentsExecutionsResponses = appendResponsesToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
 				mutex.Unlock()
 
 				results <- duration
@@ -70,18 +70,10 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*Result, error) {
 	}()
 
 	var allDurations []time.Duration
-	// Process results
+	// Process results before return (This is needed to complete all the tasks and close channels gracefully)
 	for r := range results {
 		allDurations = append(allDurations, r)
 	}
 
-	res := &Result{
-		JobDuration: time.Since(now),
-		RequestRate: calculateRequestRate(time.Since(now)-time.Second, len(allDurations)),
-		Assignments: allAssignmentsExecutionsDurations,
-		Durations:   allDurations,
-		Responses:   allAssignmentsExecutionsResponses,
-	}
-
-	return res, nil
+	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }

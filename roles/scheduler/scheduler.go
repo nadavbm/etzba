@@ -3,7 +3,9 @@ package scheduler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -11,14 +13,17 @@ import (
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/common"
+	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/etzba/roles/worker"
 	"github.com/nadavbm/zlog"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
+var wg sync.WaitGroup
+var mutex = &sync.Mutex{}
+
 type workerChannel chan worker.Assignment
-type resultsChannel chan time.Duration
 
 // Schduler will schedule workers to work on tasks (sql queries, net icmp or api calls) in a given duration or tasks queue
 type Scheduler struct {
@@ -45,17 +50,6 @@ func NewScheduler(logger *zlog.Logger, settings *common.Settings) (*Scheduler, e
 		Settings:      settings,
 		Authenticator: authenticator.NewAuthenticator(logger, settings.ConfigFile),
 	}, nil
-}
-
-//
-// ----------------------------------------------------------------------------------------- requests limit and rate ----------------------------------------------------------------------------------------------------------------
-//
-
-func calculateRequestRate(jobDuration time.Duration, totalExecutions int) int {
-	if (totalExecutions*1000000000)/(int(jobDuration)) < 0 {
-		return totalExecutions
-	}
-	return ((totalExecutions * 1000000000) / (int(jobDuration)))
 }
 
 //
@@ -183,6 +177,35 @@ func (s *Scheduler) executeAPIRequestFromAssignment(assigment *worker.Assignment
 	}
 	return worker.GetAPIRequestDuration(assigment)
 
+}
+
+// prepareAssignmentsForResultCollection set maps to prepare the result output with assignment durations and responses
+func (s *Scheduler) prepareAssignmentsForResultCollection(assignments []worker.Assignment) (map[string][]time.Duration, map[string][]*apiclient.Response, error) {
+	allAssignmentsExecutionsDurations := make(map[string][]time.Duration)
+	allAssignmentsExecutionsResponses := make(map[string][]*apiclient.Response)
+	var allAPIResponses []*apiclient.Response
+	var allDurations []time.Duration
+	for _, a := range assignments {
+		allAssignmentsExecutionsDurations[getAssignmentAsString(a, s.Settings.ExecutionType)] = allDurations
+		allAssignmentsExecutionsResponses[getAssignmentAsString(a, s.Settings.ExecutionType)] = allAPIResponses
+	}
+
+	return allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses, nil
+}
+
+//
+// ------------------------------------------------------------------------------- helpers ------------------------------------------------------------------
+//
+
+// getAssignmentAsString prepare the assignment title for stdout
+func getAssignmentAsString(a worker.Assignment, command string) string {
+	switch {
+	case command == "api":
+		return fmt.Sprintf("URL: %s, Method: %s", a.ApiRequest.Url, a.ApiRequest.Method)
+	case command == "sql":
+		return sqlclient.ToSQL(&a.SqlQuery)
+	}
+	return ""
 }
 
 /*

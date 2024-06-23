@@ -33,7 +33,7 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 		logger.Fatal("could not create a scheduler instance", zap.Error(err))
 	}
 
-	var result *scheduler.Result
+	var result *common.Result
 	if duration != "" {
 		result, err = s.ExecuteJobByDuration()
 		if err != nil {
