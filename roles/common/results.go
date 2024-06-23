@@ -1,6 +1,7 @@
 package common
 
 import (
+	"math"
 	"time"
 
 	"github.com/nadavbm/etzba/pkg/calculator"
@@ -43,7 +44,7 @@ func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[stri
 	general := General{
 		JobDuration:     jobDuration,
 		TotalExeuctions: len(allDurations),
-		RequestRate:     float64(len(allDurations)) / float64(jobDuration),
+		RequestRate:     calculateRequestRate(jobDuration, len(allDurations)),
 		ProcessedDurations: Durations{
 			MinimumTime: calculator.GetMinimumTime(allDurations),
 			MedianTime:  calculator.GetMedianTime(allDurations),
@@ -85,4 +86,9 @@ func concatAllDurations(assignmentsDurations map[string][]time.Duration) []time.
 		allDurations = append(allDurations, val...)
 	}
 	return allDurations
+}
+
+// calculateRequestRate return the request per second value
+func calculateRequestRate(jobDuration time.Duration, totalExecutions int) float64 {
+	return math.Round(float64(totalExecutions*1000000000) / (float64(jobDuration)))
 }

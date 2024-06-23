@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const sleepTimeBeforeClosingChannels = 3
+
 // ExecuteJobByDuration when "--duration=Xx" is given via command line, shceduler will fill work channel with assignments until the job duration is over
 // after execution is completed, it will return the result of the load test
 func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
@@ -62,7 +64,9 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 		}
 	}
 
-	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
+	elapsed := time.Since(now) - time.Duration(sleepTimeBeforeClosingChannels*(time.Second))
+	s.Logger.Info("Calculating results", zap.Any("elapsed", elapsed.Seconds()))
+	return common.PrepareResultOuput(elapsed, allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
 
 // addToWorkChannel will add assignments to work channel and close the channel when the duration time is over
@@ -77,7 +81,7 @@ func (s *Scheduler) addToWorkChannel(sleepTime, duration time.Duration, c chan w
 			s.Logger.Info("job completed after", zap.Any("duration", duration.Seconds()))
 			wg.Done()
 			// TODO: set max query time and sleep before closing the channl to allow all workers finish their assignment executions.
-			time.Sleep(3 * time.Second)
+			time.Sleep(sleepTimeBeforeClosingChannels * time.Second)
 			close(c)
 			return
 		default:
