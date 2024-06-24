@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/authenticator"
 	"github.com/nadavbm/etzba/roles/common"
@@ -64,14 +63,13 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	printer.PrintToTerminal(result, false)
+
 	if outputFile != "" {
-		w := filer.NewWriter(logger)
-		if err := w.WriteFile(outputFile, result); err != nil {
-			logger.Error("could not write result to file", zap.Any("result", result), zap.Error(err))
+		if err := result.ParseResult(logger, outputFile); err != nil {
+			s.Logger.Fatal("could not parse result for output file")
 		}
 	}
-
-	printer.PrintToTerminal(result, false)
 }
 
 //

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/common"
 	"github.com/nadavbm/etzba/roles/scheduler"
@@ -46,12 +45,11 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	printer.PrintToTerminal(result, true)
+
 	if outputFile != "" {
-		w := filer.NewWriter(logger)
-		if err := w.WriteFile(outputFile, result); err != nil {
-			logger.Error("could not write result to file", zap.Any("result", result), zap.Error(err))
+		if err := result.ParseResult(logger, outputFile); err != nil {
+			s.Logger.Fatal("could not parse result for output file")
 		}
 	}
-
-	printer.PrintToTerminal(result, true)
 }

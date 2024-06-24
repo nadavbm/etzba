@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/nadavbm/etzba/pkg/calculator"
+	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/etzba/roles/apiclient"
+	"github.com/nadavbm/zlog"
+	"go.uber.org/zap"
 )
 
 // Result record all task durations as duration slice and use later calculator to provide the following:
@@ -43,10 +46,16 @@ type Durations struct {
 	MaximumTime float64 `json:"maximumTime"`
 }
 
+// TODO: Collect api responses for output
+type ApiResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 func PrepareResultOuput(title, executionType string, jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
 	allDurations := concatAllDurations(assignmentsDurations)
 	general := General{
-		JobDuration:     time.Duration(jobDuration.Seconds()),
+		JobDuration:     jobDuration,
 		TotalExeuctions: len(allDurations),
 		RequestRate:     calculateRequestRate(jobDuration, len(allDurations)),
 		ProcessedDurations: Durations{
@@ -69,13 +78,14 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 				MaximumTime: calculator.GetMaximumTime(durations),
 			},
 		}
-		var apiResponses []*apiclient.Response
-		for t, responses := range allAssignmentsExecutionsResponses {
-			if t == title && responses[0] != nil {
-				apiResponses = append(apiResponses, responses...)
-				assigment.ApiResponses = apiResponses
-			}
-		}
+		// TODO: improve api response collection
+		//var apiResponses []*apiclient.Response
+		//for _, responses := range allAssignmentsExecutionsResponses {
+		//	if executionType == "api" {
+		//		apiResponses = append(apiResponses, responses...)
+		//		assigment.ApiResponses = apiResponses
+		//	}
+		//}
 		assignments = append(assignments, assigment)
 	}
 
@@ -87,6 +97,17 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 		General:       general,
 		Assignments:   assignments,
 	}
+}
+
+func (r *Result) ParseResult(logger *zlog.Logger, outputFile string) error {
+	r.General.JobDuration = time.Duration(time.Duration(r.General.JobDuration).Seconds())
+	w := filer.NewWriter(logger)
+	if err := w.WriteFile(outputFile, r); err != nil {
+		logger.Error("could not write result to file", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
 
 // concatAllDurations from assignment results to return durations from all assignments
