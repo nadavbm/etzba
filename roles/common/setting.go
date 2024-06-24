@@ -13,20 +13,23 @@ type Settings struct {
 	TasksOrder []int
 	// ExecutionType from command line arg can be sql, api or other type of executions
 	ExecutionType string
-	// ConfigFile used for authentication for api server or sql server
+	// AuthFile used for authentication for api server or sql server
+	AuthFile string
+	// ConfigFile contains all assignments for workers during the etz run
 	ConfigFile string
-	// HelpersFile provided via command line tool and contains all assignments for workers
-	HelpersFile string
+	// OutputFile is the file path to export results (json or yaml)
+	OutputFile string
 	// Verbose shows worker executions in terminal
 	Verbose bool
 }
 
-func GetSettings(jobDuration time.Duration, exectionType, configFile, helpersFile string, rps, workersCount int, verbose bool) *Settings {
+func GetSettings(jobDuration time.Duration, exectionType, authFile, configFile, outputFile string, rps, workersCount int, verbose bool) *Settings {
 	s := Settings{
 		Duration:      jobDuration,
 		ExecutionType: exectionType,
+		AuthFile:      authFile,
 		ConfigFile:    configFile,
-		HelpersFile:   helpersFile,
+		OutputFile:    outputFile,
 		Verbose:       verbose,
 	}
 	if rps != 0 {

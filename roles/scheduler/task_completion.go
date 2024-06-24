@@ -9,7 +9,7 @@ import (
 )
 
 // ExecuteJobUntilCompletion when omitting '--duration' from the command, this function will execute
-// all assignments from the helpers file until all assignments completed
+// all assignments from the config file until all assignments completed
 func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 	assignments, err := s.setAssignmentsToWorkers()
 	if err != nil {
@@ -75,5 +75,5 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 		allDurations = append(allDurations, r)
 	}
 
-	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
+	return common.PrepareResultOuput("", s.Settings.ExecutionType, time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }

@@ -5,7 +5,7 @@ metadata:
   labels:
     name: {{ .Values.cli.name }}
 data:
-  helpers.yaml: |-
+  config.yaml: |-
       - url: http://{{ .Values.api.url }}:{{ .Values.api.containerPort }}/v1/results
         method: GET
         payload: '{"example": "example"}'

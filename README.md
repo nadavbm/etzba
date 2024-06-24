@@ -17,17 +17,17 @@ you may move the file to `/usr/local/bin` or run it from `cli` dir as follow:
 ``` sh
 cd cli/
 
-./etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=1s
-./etz api --workers=3 --config=secret.json --helpers=api.json
+./etz sql --workers=3 --auth=secret.json --config=sql.csv --duration=1s
+./etz api --workers=3 --auth=secret.json --config=api.json
 ```
 
-you may also use the `examples/` directory to run tests, deploy environment for testing, example of helpers file or build the binary.
+you may also use the `examples/` directory to run tests, deploy environment for testing, example of config file or build the binary.
 
-### prepare sql service helpers file
+### prepare sql service config file
 
-the helpers file used by etzba to create sql queries and schedule the workers job. 
+the config file used by etzba to create sql queries and schedule the workers job. 
 
-create a csv file and add it to the command arg `--helpers=file.csv` as follow:
+create a csv file and add it to the command arg `--config=file.csv` as follow:
 
 ```
 command,table,constraint,columnref,values
@@ -38,9 +38,9 @@ SELECT,results,total BETWEEN 100 AND 200,,
 
 if you run specific queries that don't require values, constraint or columnref, you should leave empty (e.g. `,`) in the csv
 
-### prepare api service helpers file
+### prepare api service config file
 
-the helpers file will list an array of api requests that can be sent to a service url during the load test, similar to this:
+the config file will list an array of api requests that can be sent to a service url during the load test, similar to this:
 ```json
 [
   {
@@ -83,10 +83,10 @@ and to authenticate for sql server, create the following json file:
 
 ### execute etz command
 
-now we are ready to use the helpers and secret files:
+now we are ready to use the config and secret files:
 
 ```sh
-etz sql --workers=3 --config=secret.json --helpers=sql.csv --duration=1s
+etz sql --workers=3 --auth=secret.json --config=sql.csv --duration=1s
 ```
 
 ### run tests in kubernetes

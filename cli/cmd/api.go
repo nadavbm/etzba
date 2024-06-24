@@ -27,7 +27,7 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 		logger.Fatal("could set job duration", zap.Error(err))
 	}
 
-	settings := common.GetSettings(jobDuration, "api", configFile, helpersFile, rps, workersCount, Verbose)
+	settings := common.GetSettings(jobDuration, "api", authFile, configFile, outputFile, rps, workersCount, Verbose)
 	s, err := scheduler.NewScheduler(logger, settings)
 	if err != nil {
 		logger.Fatal("could not create a scheduler instance", zap.Error(err))
@@ -46,4 +46,10 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 	}
 
 	printer.PrintToTerminal(result, true)
+
+	if outputFile != "" {
+		if err := result.ParseResult(logger, outputFile); err != nil {
+			s.Logger.Fatal("could not parse result for output file")
+		}
+	}
 }

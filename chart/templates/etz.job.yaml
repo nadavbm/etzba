@@ -11,7 +11,7 @@ spec:
       containers:
       - name: {{ .Values.cli.name }}
         image: {{ .Values.cli.image.repository }}:{{ .Values.cli.image.tag }}
-        command: [ "./etz", "api", "--helpers=/data/helpers.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
+        command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
         lifecycle:
           postStart:
             exec:
@@ -29,8 +29,8 @@ spec:
               key: token
         volumeMounts:
           - name: {{ .Values.cli.name }}-cfg
-            mountPath: /data/helpers.yaml
-            subPath: helpers.yaml
+            mountPath: /data/config.yaml
+            subPath: config.yaml
       volumes:
         - name: {{ .Values.cli.name }}-cfg
           configMap:

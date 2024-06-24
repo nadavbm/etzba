@@ -29,15 +29,15 @@ sql-seed:
 	PGPASSWORD=Pass1234 psql -h localhost -U etzba -d etzba < examples/pgsql/seed.sql
 
 run-pgsql-test:
-	ETZ_POSTGRES_DB=etzba ETZ_POSTGRES_HOST=localhost ETZ_POSTGRES_PORT=5432 ETZ_POSTGRES_USER=etzba ETZ_POSTGRES_PASSWORD=Pass1234 ./etz sql --workers=3 --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose
-	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --verbose --rps=1
-	./etz sql --workers=3 --config=examples/pgsql/secret.json --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=10 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=100 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=3s
-	./etz sql --workers=20 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=50
-	./etz sql --workers=200 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=500
-	./etz sql --workers=400 --config=examples/pgsql/secret.yaml --helpers=examples/pgsql/sql.csv --duration=10s --rps=1000
+	ETZ_POSTGRES_DB=etzba ETZ_POSTGRES_HOST=localhost ETZ_POSTGRES_PORT=5432 ETZ_POSTGRES_USER=etzba ETZ_POSTGRES_PASSWORD=Pass1234 ./etz sql --workers=3 --config=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=3 --auth=examples/pgsql/secret.json --config=examples/pgsql/sql.csv --verbose
+	./etz sql --workers=3 --auth=examples/pgsql/secret.json --config=examples/pgsql/sql.csv --verbose --rps=1
+	./etz sql --workers=3 --auth=examples/pgsql/secret.json --config=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=10 --auth=examples/pgsql/secret.yaml --config=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=100 --auth=examples/pgsql/secret.yaml --config=examples/pgsql/sql.csv --duration=3s
+	./etz sql --workers=20 --auth=examples/pgsql/secret.yaml --config=examples/pgsql/sql.csv --duration=10s --rps=50 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
+	./etz sql --workers=200 --auth=examples/pgsql/secret.yaml --config=examples/pgsql/sql.csv --duration=10s --rps=500 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
+	./etz sql --workers=400 --auth=examples/pgsql/secret.yaml --config=examples/pgsql/sql.csv --duration=10s --rps=1000 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
 
 pgsql-down:
 	cd examples/pgsql && docker-compose down
@@ -55,13 +55,13 @@ api-seed:
 	cd examples/api && sh seed.sh
 
 run-api-test:
-	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --verbose
-	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.json --verbose --rps=1
-	./etz api --workers=3 --config=examples/api/secret.json --helpers=examples/api/api.yaml --duration=3s
-	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=3s
-	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=3s
-	./etz api --workers=10 --config=examples/api/secret.yaml --helpers=examples/api/api.json --duration=10s --rps=200
-	./etz api --workers=100 --config=examples/api/secret.yaml --helpers=examples/api/api.yaml --duration=10s -- rps=400
+	./etz api --workers=3 --auth=examples/api/secret.json --config=examples/api/api.json --verbose
+	./etz api --workers=3 --auth=examples/api/secret.json --config=examples/api/api.json --verbose --rps=1
+	./etz api --workers=3 --auth=examples/api/secret.json --config=examples/api/api.yaml --duration=3s
+	./etz api --workers=10 --auth=examples/api/secret.yaml --config=examples/api/api.json --duration=3s
+	./etz api --workers=100 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=3s
+	./etz api --workers=10 --auth=examples/api/secret.yaml --config=examples/api/api.json --duration=10s --rps=50 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
+	./etz api --workers=20 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=10s -- rps=100 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
 api-down:
 	cd examples/api && docker-compose down
 
