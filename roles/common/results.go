@@ -93,7 +93,7 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 		Title:         title,
 		StartTime:     time.Now().Local().Add(jobDuration),
 		ExecutionType: executionType,
-		Tags:          []string{time.Now().Format("20240624015425"), executionType, title},
+		Tags:          []string{executionType},
 		General:       general,
 		Assignments:   assignments,
 	}
