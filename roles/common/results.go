@@ -34,7 +34,7 @@ type Assignment struct {
 	Title              string                `json:"title"`
 	TotalExeuctions    int                   `json:"totalExecutions"`
 	ProcessedDurations Durations             `json:"processedDurations"`
-	ApiResponses       []*apiclient.Response `json:"apiResponses"`
+	ApiResponses       []*apiclient.Response `json:"apiResponses,omitempty"`
 }
 
 // Durations compose of total # processed tasks, total processing time for the job, the minimum task time,
