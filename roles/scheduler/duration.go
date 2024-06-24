@@ -66,7 +66,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 
 	elapsed := time.Since(now) - time.Duration(sleepTimeBeforeClosingChannels*(time.Second))
 	s.Logger.Info("Calculating results", zap.Any("elapsed", elapsed.Seconds()))
-	return common.PrepareResultOuput(elapsed, allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
+	return common.PrepareResultOuput("", s.Settings.ExecutionType, elapsed, allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
 
 // addToWorkChannel will add assignments to work channel and close the channel when the duration time is over

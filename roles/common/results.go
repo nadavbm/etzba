@@ -12,8 +12,12 @@ import (
 // X amount of tasks processed ,total processing time across all tasks ,the minimum task time (for a single task),
 // the median task time ,the average task time ,and the maximum task time.
 type Result struct {
-	General     General      `json:"general"`
-	Assignments []Assignment `json:"assignments"`
+	Title         string       `json:"title"`
+	StartTime     time.Time    `json:"startTime"`
+	Tags          []string     `json:"tags"`
+	ExecutionType string       `json:"executionType"`
+	General       General      `json:"general"`
+	Assignments   []Assignment `json:"assignments"`
 }
 
 type General struct {
@@ -39,7 +43,7 @@ type Durations struct {
 	MaximumTime float64 `json:"maximumTime"`
 }
 
-func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
+func PrepareResultOuput(title, executionType string, jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
 	allDurations := concatAllDurations(assignmentsDurations)
 	general := General{
 		JobDuration:     time.Duration(jobDuration.Seconds()),
@@ -76,8 +80,12 @@ func PrepareResultOuput(jobDuration time.Duration, assignmentsDurations map[stri
 	}
 
 	return &Result{
-		General:     general,
-		Assignments: assignments,
+		Title:         title,
+		StartTime:     time.Now().Local().Add(jobDuration),
+		ExecutionType: executionType,
+		Tags:          []string{time.Now().Format("20240624015425"), executionType, title},
+		General:       general,
+		Assignments:   assignments,
 	}
 }
 

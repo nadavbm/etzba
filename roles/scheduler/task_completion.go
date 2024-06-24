@@ -75,5 +75,5 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 		allDurations = append(allDurations, r)
 	}
 
-	return common.PrepareResultOuput(time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
+	return common.PrepareResultOuput("", s.Settings.ExecutionType, time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
