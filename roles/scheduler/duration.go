@@ -6,6 +6,7 @@ import (
 
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/common"
+	"github.com/nadavbm/etzba/roles/prompusher"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
@@ -64,6 +65,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 		}
 	}
 
+	pushResultsToPrometheus()
 	elapsed := time.Since(now) - time.Duration(sleepTimeBeforeClosingChannels*(time.Second))
 	s.Logger.Info("Calculating results", zap.Any("elapsed", elapsed.Seconds()))
 	return common.PrepareResultOuput("", s.Settings.ExecutionType, elapsed, allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
@@ -115,4 +117,10 @@ func appendResponsesToAssignmentResults(title string, assignmentResponses map[st
 	}
 
 	return assignmentResponses
+}
+
+func pushResultsToPrometheus() {
+	labels := []string{"my", "label"}
+	vec := prompusher.PrometheusClient.NewCounter("yo", "yeah", labels)
+	prompusher.PrometheusClient.PushCounter(vec, "ets", "etsa")
 }

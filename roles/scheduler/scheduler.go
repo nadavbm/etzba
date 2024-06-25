@@ -35,7 +35,7 @@ type Scheduler struct {
 	resultsChan chan time.Duration
 	// Settings
 	Settings *common.Settings
-	// authenticator
+	// Authenticator
 	Authenticator *authenticator.Authenticator
 	// connectionPool
 	ConnectionPool *pgxpool.Pool
