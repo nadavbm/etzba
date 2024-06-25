@@ -29,7 +29,10 @@ func (c *client) NewCounter(name, help string, labels []string) *prometheus.Coun
 	return counter
 }
 
-func (c *client) NewHistorgram(name, help string, labels []string) *prometheus.HistogramVec {
+// NewHistogram https://prometheus.io/docs/concepts/metric_types/#histogram
+// A histogram samples observations (usually things like request durations or response sizes) and counts them in configurable buckets. It also provides a sum of all observed values.
+// The best fit for this tool to collect results.
+func (c *client) NewHistogram(name, help string, labels []string) *prometheus.HistogramVec {
 	histogram := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: c.Namespace,
 		Subsystem: "etzba",

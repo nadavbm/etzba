@@ -14,12 +14,12 @@ const k8sNamespaceFilename = "/var/run/secrets/kubernetes.io/serviceaccount/name
 
 type Client interface {
 	Set()
-	PushGauge(gauge *prometheus.GaugeVec, groupName, groupValue string) error
-	PushCounter(counter *prometheus.CounterVec, groupName, groupValue string) error
-	PushHistogram(histogram *prometheus.HistogramVec, groupName, groupValue string) error
+	PushGauge(gauge *prometheus.GaugeVec, groupName, groupValue string, labels []string, value float64) error
+	PushCounter(counter *prometheus.CounterVec, groupName, groupValue string, labels []string) error
+	PushHistogram(histogram *prometheus.HistogramVec, groupName, groupValue string, labels []string, value float64) error
 	NewGauge(name, help string, labels []string) *prometheus.GaugeVec
 	NewCounter(name, help string, labels []string) *prometheus.CounterVec
-	NewHistorgram(name, help string, labels []string) *prometheus.HistogramVec
+	NewHistogram(name, help string, labels []string) *prometheus.HistogramVec
 }
 
 // NewClient creates new prometheus api client to push metrics
@@ -43,16 +43,21 @@ type client struct {
 	Pusher    *push.Pusher
 }
 
-func (c *client) PushGauge(gauge *prometheus.GaugeVec, groupName, groupValue string) error {
+func (c *client) PushGauge(gauge *prometheus.GaugeVec, groupName, groupValue string, labels []string, value float64) error {
+	prometheus.MustRegister(gauge)
+	gauge.WithLabelValues(labels...).Set(value)
 	return c.Pusher.Collector(gauge).Grouping(groupName, groupValue).Push()
 }
 
-func (c *client) PushCounter(counter *prometheus.CounterVec, groupName, groupValue string) error {
+func (c *client) PushCounter(counter *prometheus.CounterVec, groupName, groupValue string, labels []string) error {
 	prometheus.MustRegister(counter)
-	return c.Pusher.Collector(counter.WithLabelValues("a", "m")).Grouping(groupName, groupValue).Push()
+	counter.WithLabelValues(labels...).Inc()
+	return c.Pusher.Collector(counter).Grouping(groupName, groupValue).Push()
 }
 
-func (c *client) PushHistogram(histogram *prometheus.HistogramVec, groupName, groupValue string) error {
+func (c *client) PushHistogram(histogram *prometheus.HistogramVec, groupName, groupValue string, labels []string, value float64) error {
+	prometheus.MustRegister(histogram)
+	histogram.WithLabelValues(labels...).Observe(value)
 	return c.Pusher.Collector(histogram).Grouping(groupName, groupValue).Push()
 }
 

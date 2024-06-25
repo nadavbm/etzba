@@ -65,9 +65,9 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 		}
 	}
 
-	pushResultsToPrometheus()
 	elapsed := time.Since(now) - time.Duration(sleepTimeBeforeClosingChannels*(time.Second))
 	s.Logger.Info("Calculating results", zap.Any("elapsed", elapsed.Seconds()))
+	pushJobDurationToPrometheus(nil, elapsed.Seconds())
 	return common.PrepareResultOuput("", s.Settings.ExecutionType, elapsed, allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
 
@@ -119,8 +119,7 @@ func appendResponsesToAssignmentResults(title string, assignmentResponses map[st
 	return assignmentResponses
 }
 
-func pushResultsToPrometheus() {
-	labels := []string{"my", "label"}
-	vec := prompusher.PrometheusClient.NewCounter("yo", "yeah", labels)
-	prompusher.PrometheusClient.PushCounter(vec, "ets", "etsa")
+func pushJobDurationToPrometheus(labels []string, value float64) {
+	jobDuration := prompusher.PrometheusClient.NewHistogram("job_duration", "count total executions from result", labels)
+	prompusher.PrometheusClient.PushHistogram(jobDuration, "etzba_result", "job_duration", labels, value)
 }

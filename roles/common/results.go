@@ -7,6 +7,7 @@ import (
 	"github.com/nadavbm/etzba/pkg/calculator"
 	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/etzba/roles/apiclient"
+	"github.com/nadavbm/etzba/roles/prompusher"
 	"github.com/nadavbm/zlog"
 	"go.uber.org/zap"
 )
@@ -89,6 +90,8 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 		assignments = append(assignments, assigment)
 	}
 
+	defer pushResultsToPrometheus(nil, float64(len(allDurations)))
+
 	return &Result{
 		Title:         title,
 		StartTime:     time.Now().Local().Add(jobDuration),
@@ -122,4 +125,9 @@ func concatAllDurations(assignmentsDurations map[string][]time.Duration) []time.
 // calculateRequestRate return the request per second value
 func calculateRequestRate(jobDuration time.Duration, totalExecutions int) float64 {
 	return math.Round(float64(totalExecutions*1000000000) / (float64(jobDuration)))
+}
+
+func pushResultsToPrometheus(labels []string, totalExecutions float64) {
+	totalExecutionsVec := prompusher.PrometheusClient.NewGauge("total_executions", "count total executions from result", labels)
+	prompusher.PrometheusClient.PushGauge(totalExecutionsVec, "etzba_result", "total_executions", labels, totalExecutions)
 }
