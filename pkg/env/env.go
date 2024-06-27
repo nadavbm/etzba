@@ -22,7 +22,6 @@ var ApiToken = getEnvVar("", "ETZ_API_TOKEN")
 
 // Prometheus configuration
 var PrometheusPushGateway = getEnvVar("", "PROMETHEUS_PUSH_GATEWAY")
-var PushToPrometheus = getBoolEnv(false, "PROMETHEUS_PUSH")
 
 func getEnvVar(defaultValue, key string) string {
 	value := os.Getenv(key)
