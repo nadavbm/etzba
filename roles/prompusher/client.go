@@ -3,6 +3,7 @@ package prompusher
 import (
 	"os"
 
+	"github.com/nadavbm/etzba/pkg/env"
 	"github.com/nadavbm/zlog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
@@ -29,7 +30,7 @@ func NewClient(logger *zlog.Logger) (Client, error) {
 		return nil, err
 	}
 
-	pusher := push.New("asd", jobName)
+	pusher := push.New(env.PrometheusPushGateway, jobName)
 	return &client{
 		Logger:    logger,
 		Namespace: ns,
@@ -44,19 +45,19 @@ type client struct {
 }
 
 func (c *client) PushGauge(gauge *prometheus.GaugeVec, groupName, groupValue string, labels []string, value float64) error {
-	prometheus.MustRegister(gauge)
+	//prometheus.MustRegister(gauge)
 	gauge.WithLabelValues(labels...).Set(value)
 	return c.Pusher.Collector(gauge).Grouping(groupName, groupValue).Push()
 }
 
 func (c *client) PushCounter(counter *prometheus.CounterVec, groupName, groupValue string, labels []string) error {
-	prometheus.MustRegister(counter)
+	//prometheus.MustRegister(counter)
 	counter.WithLabelValues(labels...).Inc()
 	return c.Pusher.Collector(counter).Grouping(groupName, groupValue).Push()
 }
 
 func (c *client) PushHistogram(histogram *prometheus.HistogramVec, groupName, groupValue string, labels []string, value float64) error {
-	prometheus.MustRegister(histogram)
+	//prometheus.MustRegister(histogram)
 	histogram.WithLabelValues(labels...).Observe(value)
 	return c.Pusher.Collector(histogram).Grouping(groupName, groupValue).Push()
 }
