@@ -90,7 +90,7 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 		assignments = append(assignments, assigment)
 	}
 
-	defer pushResultsToPrometheus(nil, float64(len(allDurations)))
+	pushResultToPrometheus([]string{"result"}, general.ProcessedDurations.AverageTime, general.RequestRate, float64(general.TotalExeuctions), general.JobDuration.Seconds())
 
 	return &Result{
 		Title:         title,
@@ -127,7 +127,32 @@ func calculateRequestRate(jobDuration time.Duration, totalExecutions int) float6
 	return math.Round(float64(totalExecutions*1000000000) / (float64(jobDuration)))
 }
 
-func pushResultsToPrometheus(labels []string, totalExecutions float64) {
+// ---------------------------------------------------------- prometheus ------------------------------------------------------------------------
+//
+// pushResultToPrometheus push result data to prometheus
+func pushResultToPrometheus(labels []string, averageRequestDuration, requestRate, totalExecutions, jobDuration float64) {
+	pushAvgReqDurationToPrometheus(labels, averageRequestDuration)
+	pushRequestRateToPrometheus(labels, requestRate)
+	pushTotalExecutionsToPrometheus(labels, totalExecutions)
+	pushJobDurationToPrometheus(labels, jobDuration)
+}
+
+func pushAvgReqDurationToPrometheus(labels []string, averageRequestDuration float64) {
+	avgReqDuration := prompusher.PrometheusClient.NewHistogram("avg_req_duration", "general average request duration", labels)
+	prompusher.PrometheusClient.PushHistogram(avgReqDuration, "etzba_result", "avg_req_duration", labels, averageRequestDuration)
+}
+
+func pushRequestRateToPrometheus(labels []string, requestRate float64) {
+	requestRateVec := prompusher.PrometheusClient.NewGauge("request_rate", "request rate from result", labels)
+	prompusher.PrometheusClient.PushGauge(requestRateVec, "etzba_result", "request_rate", labels, requestRate)
+}
+
+func pushTotalExecutionsToPrometheus(labels []string, totalExecutions float64) {
 	totalExecutionsVec := prompusher.PrometheusClient.NewGauge("total_executions", "count total executions from result", labels)
 	prompusher.PrometheusClient.PushGauge(totalExecutionsVec, "etzba_result", "total_executions", labels, totalExecutions)
+}
+
+func pushJobDurationToPrometheus(labels []string, jobDuration float64) {
+	totalJobDuration := prompusher.PrometheusClient.NewHistogram("job_duration", "job duration", labels)
+	prompusher.PrometheusClient.PushHistogram(totalJobDuration, "etzba_result", "job_duration", labels, jobDuration)
 }

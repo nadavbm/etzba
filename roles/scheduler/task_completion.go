@@ -75,5 +75,7 @@ func (s *Scheduler) ExecuteJobUntilCompletion() (*common.Result, error) {
 		allDurations = append(allDurations, r)
 	}
 
+	elapsed := time.Since(now) - time.Duration(sleepTimeBeforeClosingChannels*(time.Second))
+	pushSettingsToPrometheus([]string{"job", s.Settings.ExecutionType}, float64(s.Settings.NumberOfWorkers), elapsed.Seconds())
 	return common.PrepareResultOuput("", s.Settings.ExecutionType, time.Since(now), allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }

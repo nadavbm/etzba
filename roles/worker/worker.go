@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/nadavbm/etzba/roles/apiclient"
+	"github.com/nadavbm/etzba/roles/prompusher"
 	"github.com/nadavbm/etzba/roles/sqlclient"
 	"github.com/nadavbm/zlog"
 	"github.com/pkg/errors"
@@ -45,6 +46,7 @@ func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration
 		return time.Since(start), resp
 	}
 
+	pushRequestDurationToPrometheus([]string{"api"}, float64(time.Since(start)))
 	return time.Since(start), resp
 }
 
@@ -84,5 +86,16 @@ func (w *SQLWorker) GetSQLQueryDuration(assignment *Assignment) (time.Duration, 
 		return time.Since(start), errors.Wrap(err, "worker could not execute query")
 	}
 
+	pushQueryDurationToPrometheus([]string{"sql"}, float64(time.Since(start)))
 	return time.Since(start), nil
+}
+
+func pushRequestDurationToPrometheus(labels []string, value float64) {
+	requestDurationVec := prompusher.PrometheusClient.NewHistogram("req_duration", "api request duration", labels)
+	prompusher.PrometheusClient.PushHistogram(requestDurationVec, "etzba_api_request", "req_duration", labels, value)
+}
+
+func pushQueryDurationToPrometheus(labels []string, value float64) {
+	queryDurationVec := prompusher.PrometheusClient.NewHistogram("query_duration", "sql query duration", labels)
+	prompusher.PrometheusClient.PushHistogram(queryDurationVec, "etzba_sql_query", "query_duration", labels, value)
 }
