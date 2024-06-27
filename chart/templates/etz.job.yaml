@@ -11,7 +11,7 @@ spec:
       containers:
       - name: {{ .Values.cli.name }}
         image: {{ .Values.cli.image.repository }}:{{ .Values.cli.image.tag }}
-        command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
+        command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=2", "--rps=4", "--duration=180s", "--verbose" ]
         lifecycle:
           postStart:
             exec:
@@ -27,6 +27,8 @@ spec:
             secretKeyRef:
               name: {{ .Values.cli.name }}-sec
               key: token
+        - name: PROMETHEUS_PUSH_GATEWAY
+          value: prometheus.prometheus.svc.cluster.local
         volumeMounts:
           - name: {{ .Values.cli.name }}-cfg
             mountPath: /data/config.yaml
