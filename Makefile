@@ -4,7 +4,8 @@
 # TAG docker image tag
 TAG ?= latest
 REPO ?= nadavbm/etzba
-PROMETHEUS_PUSHGATEWAY_URL := http://10.111.255.191:9091/
+# use kubectl get svc -n prometheus and set the url
+PROMETHEUS_PUSHGATEWAY_URL := http://10.101.163.75:9091/
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
 pg: pgsql-up sql-seed run-pgsql-test pgsql-down
