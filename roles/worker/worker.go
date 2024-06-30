@@ -35,17 +35,11 @@ func (w *APIWorker) GetAPIRequestDuration(assignment *Assignment) (time.Duration
 	start := time.Now()
 
 	response, err := w.ApiClient.ExecuteAPIRequest(translateAssignmentToAPIRequest(assignment))
-	resp := &apiclient.Response{
-		Status:  response.Status,
-		Code:    response.Code,
-		Headers: response.Headers,
-		Payload: response.Payload,
-	}
 	if err != nil {
-		return time.Since(start), resp
+		return time.Since(start), nil
 	}
 
-	return time.Since(start), resp
+	return time.Since(start), response
 }
 
 // SQLWorker will get an assignment from the Scheduler

@@ -31,10 +31,10 @@ type General struct {
 }
 
 type Assignment struct {
-	Title              string                `json:"title"`
-	TotalExeuctions    int                   `json:"totalExecutions"`
-	ProcessedDurations Durations             `json:"processedDurations"`
-	ApiResponses       []*apiclient.Response `json:"apiResponses,omitempty"`
+	Title              string        `json:"title"`
+	TotalExeuctions    int           `json:"totalExecutions"`
+	ProcessedDurations Durations     `json:"processedDurations"`
+	ApiResponses       []ApiResponse `json:"apiResponses,omitempty"`
 }
 
 // Durations compose of total # processed tasks, total processing time for the job, the minimum task time,
@@ -46,12 +46,18 @@ type Durations struct {
 	MaximumTime float64 `json:"maximumTime"`
 }
 
-// TODO: Collect api responses for output
+// ApiResponse is a similar http response during the test, that collect the count of requests with similar status code and message from api server
 type ApiResponse struct {
-	Code    int    `json:"code"`
+	// Code is http status code
+	Code int `json:"code"`
+	// Message is the api payload
 	Message string `json:"message"`
+	// RequestsCount with this status code
+	RequestsCount int `json:"count"`
+	ContentLength int `json:"length"`
 }
 
+// PrepareResultOuput collect and process all details and durations from a test and return a Result
 func PrepareResultOuput(title, executionType string, jobDuration time.Duration, assignmentsDurations map[string][]time.Duration, allAssignmentsExecutionsResponses map[string][]*apiclient.Response) *Result {
 	allDurations := concatAllDurations(assignmentsDurations)
 	general := General{
@@ -78,14 +84,9 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 				MaximumTime: calculator.GetMaximumTime(durations),
 			},
 		}
-		// TODO: improve api response collection
-		//var apiResponses []*apiclient.Response
-		//for _, responses := range allAssignmentsExecutionsResponses {
-		//	if executionType == "api" {
-		//		apiResponses = append(apiResponses, responses...)
-		//		assigment.ApiResponses = apiResponses
-		//	}
-		//}
+		if executionType == "api" {
+			assigment.ApiResponses = processApiResponsesPerAssignment(allAssignmentsExecutionsResponses[title])
+		}
 		assignments = append(assignments, assigment)
 	}
 
@@ -99,6 +100,7 @@ func PrepareResultOuput(title, executionType string, jobDuration time.Duration, 
 	}
 }
 
+// ParseResult output result into json file
 func (r *Result) ParseResult(logger *zlog.Logger, outputFile string) error {
 	r.General.JobDuration = time.Duration(time.Duration(r.General.JobDuration).Seconds())
 	w := filer.NewWriter(logger)
@@ -122,4 +124,43 @@ func concatAllDurations(assignmentsDurations map[string][]time.Duration) []time.
 // calculateRequestRate return the request per second value
 func calculateRequestRate(jobDuration time.Duration, totalExecutions int) float64 {
 	return math.Round(float64(totalExecutions*1000000000) / (float64(jobDuration)))
+}
+
+// processApiResponsesPerAssignment return ApiResponse with similar response returned from api and the request count
+func processApiResponsesPerAssignment(responses []*apiclient.Response) []ApiResponse {
+	Codekinds := getAllStatusCodesKindsFromApiResponse(responses)
+	codeApiRespMap := make(map[int][]*apiclient.Response)
+	for _, r := range responses {
+		for _, v := range Codekinds {
+			if r.Code == v {
+				codeApiRespMap[r.Code] = append(codeApiRespMap[r.Code], r)
+			}
+		}
+	}
+
+	// Process only with the second api response content length and message, based on status code
+	var processedApiResponses []ApiResponse
+	for _, code := range Codekinds {
+		apiResp := ApiResponse{
+			Code:          code,
+			Message:       codeApiRespMap[code][1].Status,
+			RequestsCount: len(codeApiRespMap[code]),
+			ContentLength: codeApiRespMap[code][1].ContentLength,
+		}
+		processedApiResponses = append(processedApiResponses, apiResp)
+	}
+	return processedApiResponses
+}
+
+// getAllStatusCodesKindsFromApiResponse
+func getAllStatusCodesKindsFromApiResponse(responses []*apiclient.Response) []int {
+	statusCodes := make(map[int]bool)
+	for _, r := range responses {
+		statusCodes[r.Code] = true
+	}
+	var codeTypes []int
+	for k := range statusCodes {
+		codeTypes = append(codeTypes, k)
+	}
+	return codeTypes
 }
