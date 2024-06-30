@@ -138,14 +138,14 @@ func processApiResponsesPerAssignment(responses []*apiclient.Response) []ApiResp
 		}
 	}
 
-	// Process only with the second api response content length and message, based on status code
+	// Process only with the first api response content length and message, based on status code
 	var processedApiResponses []ApiResponse
 	for _, code := range Codekinds {
 		apiResp := ApiResponse{
 			Code:          code,
-			Message:       codeApiRespMap[code][1].Status,
+			Message:       codeApiRespMap[code][0].Status,
 			RequestsCount: len(codeApiRespMap[code]),
-			ContentLength: codeApiRespMap[code][1].ContentLength,
+			ContentLength: codeApiRespMap[code][0].ContentLength,
 		}
 		processedApiResponses = append(processedApiResponses, apiResp)
 	}
