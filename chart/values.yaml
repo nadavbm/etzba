@@ -11,14 +11,26 @@ cli:
     tag: "latest"
   resources:
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 1000m
+      memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 256Mi
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  cliSets: 
+    - command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
+      sleep: [ "/bin/sh", "-c", "sleep 30" ]
+    - command: [ "./etz", "api", "--config=/data/config.json", "--workers=5", "--rps=25", "--duration=30s", "--verbose" ]
+      sleep: [ "/bin/sh", "-c", "sleep 120" ]
+    - command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=7", "--rps=35", "--duration=30s", "--verbose" ]
+      sleep: [ "/bin/sh", "-c", "sleep 180" ]
+    - command: [ "./etz", "api", "--config=/data/config.json", "--workers=9", "--rps=45", "--duration=30s", "--verbose" ]
+      sleep: [ "/bin/sh", "-c", "sleep 240" ]
+    - command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=12", "--rps=60", "--duration=30s", "--verbose" ]
+      sleep: [ "/bin/sh", "-c", "sleep 300" ]
+    - command: [ "./etz", "api", "--config=/data/config.json", "--workers=15", "--rps=90", "--duration=30s", "--verbose" ]
 
 api: 
   name: etzba-api
@@ -30,11 +42,11 @@ api:
   containerPort: 8080
   resources:
     limits:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 2000m
+      memory: 512Mi
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 500m
+      memory: 256Mi
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -48,8 +60,8 @@ pg:
   containerPort: 5432
   resources:
     limits:
-      cpu: 200m
-      memory: 512Mi
+      cpu: 600m
+      memory: 2048Mi
     requests:
       cpu: 200m
       memory: 512Mi
