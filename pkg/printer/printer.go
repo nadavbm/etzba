@@ -30,8 +30,8 @@ func printDetailedAssignmentExecutions(r *common.Result) {
 	for _, a := range r.Assignments {
 		fmt.Println(fmt.Sprintf("\n\t%s: \n\t%s", a.Title, fmt.Sprintf("-------------------------------------------------------------------------------------------------------------------------------------------------------------")))
 		fmt.Println(fmt.Sprintf("\ttotal executions: \t%d", a.TotalExeuctions))
-		fmt.Println(fmt.Sprintf("\tavg_duration: \t\t%vms", a.ProcessedDurations.AverageTime))
-		fmt.Println(fmt.Sprintf("\tmin_duration: \t\t%vms", a.ProcessedDurations.MinimumTime))
-		fmt.Println(fmt.Sprintf("\tmax_duration: \t\t%vms", a.ProcessedDurations.MaximumTime))
+		fmt.Println(fmt.Sprintf("\tavg_duration: \t\t%.2fms", a.ProcessedDurations.AverageTime))
+		fmt.Println(fmt.Sprintf("\tmin_duration: \t\t%.2fms", a.ProcessedDurations.MinimumTime))
+		fmt.Println(fmt.Sprintf("\tmax_duration: \t\t%.2fms", a.ProcessedDurations.MaximumTime))
 	}
 }
