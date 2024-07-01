@@ -63,7 +63,7 @@ func benchmarkSql(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	printer.PrintToTerminal(result, false)
+	printer.PrintToTerminal(result)
 
 	if outputFile != "" {
 		if err := result.ParseResult(logger, outputFile); err != nil {

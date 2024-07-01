@@ -3,14 +3,13 @@ package printer
 import (
 	"fmt"
 
-	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/common"
 )
 
 // PrintToTerminal prints resutls to terminal
-func PrintToTerminal(r *common.Result, collectApiResponses bool) {
+func PrintToTerminal(r *common.Result) {
 	printAllTaskDurations(r)
-	printDetailedAssignmentExecutions(r, collectApiResponses)
+	printDetailedAssignmentExecutions(r)
 }
 
 func printAllTaskDurations(r *common.Result) {
@@ -26,33 +25,13 @@ func printAllTaskDurations(r *common.Result) {
 	return
 }
 
-func printDetailedAssignmentExecutions(r *common.Result, collectApiResponses bool) {
+func printDetailedAssignmentExecutions(r *common.Result) {
 	fmt.Println("\nDetailed result per assignment: \n===============================")
 	for _, a := range r.Assignments {
 		fmt.Println(fmt.Sprintf("\n\t%s: \n\t%s", a.Title, fmt.Sprintf("-------------------------------------------------------------------------------------------------------------------------------------------------------------")))
 		fmt.Println(fmt.Sprintf("\ttotal executions: \t%d", a.TotalExeuctions))
-		if collectApiResponses {
-			statusCount := getAllResponsesPerAssignment(a.ApiResponses)
-			for s, t := range statusCount {
-				fmt.Println(fmt.Sprintf("\tstatus: \t\t%s", s))
-				fmt.Println(fmt.Sprintf("\ttotal requests: \t%d", t))
-			}
-		}
 		fmt.Println(fmt.Sprintf("\tavg_duration: \t\t%.2fms", a.ProcessedDurations.AverageTime))
 		fmt.Println(fmt.Sprintf("\tmin_duration: \t\t%.2fms", a.ProcessedDurations.MinimumTime))
 		fmt.Println(fmt.Sprintf("\tmax_duration: \t\t%.2fms", a.ProcessedDurations.MaximumTime))
 	}
-}
-
-func getAllResponsesPerAssignment(responses []*apiclient.Response) map[string]int {
-	statusCount := make(map[string]int)
-	for _, r := range responses {
-		_, exist := statusCount[r.Status]
-		if exist {
-			statusCount[r.Status] += 1
-		} else {
-			statusCount[r.Status] = 1
-		}
-	}
-	return statusCount
 }
