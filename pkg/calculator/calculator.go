@@ -11,22 +11,19 @@ func GetTotalProcesessed(allDurations []time.Duration) int {
 func GetTotalProcesessedTime(allDurations []time.Duration) float64 {
 	var sum float64
 	for _, dur := range allDurations {
-		sum += float64(dur.Milliseconds())
+		sum += float64(dur.Seconds() * 1000)
 	}
 	return sum
 }
 
 func GetMinimumTime(allDurations []time.Duration) float64 {
-	var min int64
-	for i, dur := range allDurations {
-		if i == 0 {
-			min = int64(dur.Milliseconds())
-		}
-		if min > int64(dur.Milliseconds()) {
-			min = int64(dur.Milliseconds())
+	min := float64(allDurations[0].Seconds() * 1000)
+	for i := 0; i < len(allDurations); i++ {
+		if min > float64(allDurations[i].Seconds()*1000) {
+			min = float64(allDurations[i].Seconds() * 1000)
 		}
 	}
-	return float64(min)
+	return min
 }
 
 func GetMedianTime(allDurations []time.Duration) float64 {
@@ -37,7 +34,7 @@ func GetMedianTime(allDurations []time.Duration) float64 {
 	} else {
 		median = int(total / 2)
 	}
-	return float64(allDurations[median].Milliseconds())
+	return float64(allDurations[median].Seconds() * 1000)
 }
 
 func GetAverageTime(allDurations []time.Duration) float64 {
@@ -47,11 +44,11 @@ func GetAverageTime(allDurations []time.Duration) float64 {
 }
 
 func GetMaximumTime(allDurations []time.Duration) float64 {
-	var max int64
+	var max float64
 	for _, dur := range allDurations {
-		if max < int64(dur.Milliseconds()) {
-			max = int64(dur.Milliseconds())
+		if max < float64(dur.Seconds()*1000) {
+			max = float64(dur.Seconds() * 1000)
 		}
 	}
-	return float64(max)
+	return max
 }
