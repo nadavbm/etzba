@@ -4,18 +4,20 @@ metadata:
   name: {{ .Values.cli.name }}
 spec:
   #activeDeadlineSeconds: 30
-  completions: 3
+  completions: 1
   parallelism: 1
   template:
     spec:
       containers:
       - name: {{ .Values.cli.name }}
         image: {{ .Values.cli.image.repository }}:{{ .Values.cli.image.tag }}
-        command: [ "./etz", "api", "--config=/data/config.yaml", "--workers=3", "--rps=15", "--duration=30s", "--verbose" ]
+        {{- range .Values.cli.cliSets }}
+        command: {{ .command }}
         lifecycle:
           postStart:
             exec:
-              command: ["/bin/sh", "-c", "sleep 20"]
+              command: {{ .sleep }}
+        {{- end }}
         env:
         - name: ETZ_API_AUTH_METHOD
           valueFrom:
@@ -31,6 +33,9 @@ spec:
           - name: {{ .Values.cli.name }}-cfg
             mountPath: /data/config.yaml
             subPath: config.yaml
+          - name: {{ .Values.cli.name }}-cfg
+            mountPath: /data/config.json
+            subPath: config.json
       volumes:
         - name: {{ .Values.cli.name }}-cfg
           configMap:
