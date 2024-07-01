@@ -6,8 +6,8 @@ TAG ?= latest
 REPO ?= nadavbm/etzba
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
-pg: pgsql-up sql-seed run-pgsql-test pgsql-down
-api: api-up api-seed run-api-test api-down
+pg: go-build pgsql-up sql-seed run-pgsql-test pgsql-down
+api: go-build api-up api-seed run-api-test api-down
 # go
 .PHONY: go-test
 go-test:
@@ -61,7 +61,7 @@ run-api-test:
 	./etz api --workers=10 --auth=examples/api/secret.yaml --config=examples/api/api.json --duration=3s
 	./etz api --workers=100 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=3s
 	./etz api --workers=10 --auth=examples/api/secret.yaml --config=examples/api/api.json --duration=10s --rps=50 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
-	./etz api --workers=20 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=10s -- rps=100 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
+	./etz api --workers=20 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=10s --rps=100 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
 api-down:
 	cd examples/api && docker-compose down
 
