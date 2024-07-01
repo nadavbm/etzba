@@ -50,7 +50,7 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	printer.PrintToTerminal(result, true)
+	printer.PrintToTerminal(result)
 
 	if outputFile != "" {
 		if err := result.ParseResult(logger, outputFile); err != nil {

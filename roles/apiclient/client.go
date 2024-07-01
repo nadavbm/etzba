@@ -94,15 +94,19 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 	if err != nil {
 		debug.Debug("error2", err)
 		return &Response{
-			Status: err.Error(),
+			Code:     1,
+			Status:   err.Error(),
+			Protocol: resp.Request.Proto,
 		}, err
 	}
 
 	return &Response{
-		Status:  resp.Status,
-		Code:    resp.StatusCode,
-		Headers: resp.Header,
-		Payload: string(resBody),
+		Status:        resp.Status,
+		Code:          resp.StatusCode,
+		ContentLength: int(resp.ContentLength),
+		Headers:       resp.Header,
+		Payload:       string(resBody),
+		Protocol:      req.Proto,
 	}, nil
 }
 

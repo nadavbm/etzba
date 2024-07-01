@@ -8,8 +8,8 @@ REPO ?= nadavbm/etzba
 PROMETHEUS_PUSHGATEWAY_URL := http://10.101.163.75:9091/
 # all will run unit tests, build cli tool and run it with pgsql and api server
 all: go-test go-build pgsql-up sql-seed run-pgsql-test pgsql-down api-up api-seed run-api-test api-down
-pg: pgsql-up sql-seed run-pgsql-test pgsql-down
-api: api-up api-seed run-api-test api-down
+pg: go-build pgsql-up sql-seed run-pgsql-test pgsql-down
+api: go-build api-up api-seed run-api-test api-down
 # go
 .PHONY: go-test
 go-test:
@@ -63,7 +63,7 @@ run-api-test:
 	PROMETHEUS_PUSH_GATEWAY=${PROMETHEUS_PUSHGATEWAY_URL} ./etz api --workers=10 --auth=examples/api/secret.yaml --config=examples/api/api.json --duration=3s
 	PROMETHEUS_PUSH_GATEWAY=${PROMETHEUS_PUSHGATEWAY_URL} ./etz api --workers=100 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=3s
 	PROMETHEUS_PUSH_GATEWAY=${PROMETHEUS_PUSHGATEWAY_URL} ./etz api --workers=10 --auth=examples/api/secret.yaml --config=examples/api/api.json --duration=10s --rps=50 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
-	PROMETHEUS_PUSH_GATEWAY=${PROMETHEUS_PUSHGATEWAY_URL} ./etz api --workers=20 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=10s -- rps=100 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
+	PROMETHEUS_PUSH_GATEWAY=${PROMETHEUS_PUSHGATEWAY_URL} ./etz api --workers=20 --auth=examples/api/secret.yaml --config=examples/api/api.yaml --duration=10s --rps=100 --output=files/$$(date +%Y%m%d_%H%M%S)_result.json
 api-down:
 	cd examples/api && docker-compose down
 
