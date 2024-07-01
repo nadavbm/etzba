@@ -7,7 +7,7 @@ import (
 	"github.com/nadavbm/etzba/pkg/env"
 	"github.com/nadavbm/etzba/pkg/filer"
 	"github.com/nadavbm/zlog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Authenticator takes a secret file and authenticate to sql or api server

@@ -7,6 +7,7 @@ import (
 
 	"github.com/nadavbm/etzba/pkg/debug"
 	"github.com/nadavbm/etzba/roles/authenticator"
+	"github.com/nadavbm/etzba/roles/prompusher"
 	"github.com/nadavbm/zlog"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -38,7 +39,13 @@ func NewClient(logger *zlog.Logger, secretFile string) (*Client, error) {
 
 // ExecuteAPIRequest to remote server url by ApiRequest
 func (c *Client) ExecuteAPIRequest(req *ApiRequest) (*Response, error) {
-	return c.createAPIRequest(req.Url, req.Method, []byte(req.Payload))
+	resp, err := c.createAPIRequest(req.Url, req.Method, []byte(req.Payload))
+	if err != nil {
+		return nil, err
+	}
+	defer pushApiRequestsMetricsToPrometheus(nil, resp.Code)
+
+	return resp, nil
 }
 
 // createAPIRequest will create GET, POST, PUT or DELETE request for api server url
@@ -101,4 +108,9 @@ func (c *Client) createAPIRequest(url, method string, reqBody []byte) (*Response
 		Payload:       string(resBody),
 		Protocol:      req.Proto,
 	}, nil
+}
+
+func pushApiRequestsMetricsToPrometheus(labels []string, statusCode int) {
+	respCode := prompusher.PrometheusClient.NewGauge("status_code", "response status code", labels)
+	prompusher.PrometheusClient.PushGauge(respCode, "etzba_response", "resp_status_code", labels, float64(statusCode))
 }

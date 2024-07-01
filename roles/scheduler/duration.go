@@ -6,6 +6,7 @@ import (
 
 	"github.com/nadavbm/etzba/roles/apiclient"
 	"github.com/nadavbm/etzba/roles/common"
+	"github.com/nadavbm/etzba/roles/prompusher"
 	"github.com/nadavbm/etzba/roles/worker"
 	"go.uber.org/zap"
 )
@@ -43,6 +44,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 				mutex.Lock()
 				allAssignmentsExecutionsDurations = appendDurationsToAssignmentResults(title, allAssignmentsExecutionsDurations, duration)
 				allAssignmentsExecutionsResponses = appendResponsesToAssignmentResults(title, allAssignmentsExecutionsResponses, resp)
+				pushTaskDuration([]string{s.Settings.ExecutionType}, duration.Seconds())
 				mutex.Unlock()
 			}
 		}(i)
@@ -66,6 +68,7 @@ func (s *Scheduler) ExecuteJobByDuration() (*common.Result, error) {
 
 	elapsed := time.Since(now) - time.Duration(sleepTimeBeforeClosingChannels*(time.Second))
 	s.Logger.Info("Calculating results", zap.Any("elapsed", elapsed.Seconds()))
+	pushSettingsToPrometheus([]string{"job", s.Settings.ExecutionType}, float64(s.Settings.NumberOfWorkers), elapsed.Seconds())
 	return common.PrepareResultOuput("", s.Settings.ExecutionType, elapsed, allAssignmentsExecutionsDurations, allAssignmentsExecutionsResponses), nil
 }
 
@@ -115,4 +118,16 @@ func appendResponsesToAssignmentResults(title string, assignmentResponses map[st
 	}
 
 	return assignmentResponses
+}
+
+func pushSettingsToPrometheus(labels []string, numOfWorkers, jobDuration float64) {
+	numOfWorkersVec := prompusher.PrometheusClient.NewGauge("num_of_workers", "number of workers during the job", labels)
+	prompusher.PrometheusClient.PushGauge(numOfWorkersVec, "etzba_settings", "request_rate", labels, numOfWorkers)
+	jobDurationVec := prompusher.PrometheusClient.NewHistogram("job_duration", "what was the job duration", labels)
+	prompusher.PrometheusClient.PushHistogram(jobDurationVec, "etzba_settings", "job_duration", labels, jobDuration)
+}
+
+func pushTaskDuration(labels []string, duration float64) {
+	durationVec := prompusher.PrometheusClient.NewHistogram("task_duration", "every worker task duration", labels)
+	prompusher.PrometheusClient.PushHistogram(durationVec, "etzba_task", "task_duration", labels, float64(duration))
 }

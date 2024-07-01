@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/nadavbm/etzba/pkg/printer"
 	"github.com/nadavbm/etzba/roles/common"
+	"github.com/nadavbm/etzba/roles/prompusher"
 	"github.com/nadavbm/etzba/roles/scheduler"
 	"github.com/nadavbm/zlog"
 	"github.com/spf13/cobra"
@@ -24,7 +25,11 @@ func benchmarkAPI(cmd *cobra.Command, args []string) {
 
 	jobDuration, err := setDurationFromString(duration)
 	if err != nil {
-		logger.Fatal("could set job duration", zap.Error(err))
+		logger.Fatal("could not set job duration", zap.Error(err))
+	}
+
+	if err := prompusher.Configure(logger); err != nil {
+		logger.Fatal("could not configure prometheus client", zap.Error(err))
 	}
 
 	settings := common.GetSettings(jobDuration, "api", authFile, configFile, outputFile, rps, workersCount, Verbose)

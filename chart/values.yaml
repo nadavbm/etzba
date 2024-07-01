@@ -8,7 +8,7 @@ cli:
   image:
     repository: nadavbm/etzba
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "2024.06.25"
   resources:
     limits:
       cpu: 100m
